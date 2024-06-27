@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group 'me.alipson.multiswapcipher'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
