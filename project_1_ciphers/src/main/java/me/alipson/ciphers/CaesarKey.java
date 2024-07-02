@@ -6,16 +6,19 @@ package me.alipson.ciphers;
 // P1: Ciphers
 // TA: Daniel
 
-// TODO: Write your implementation to CaesarKey here!
-
+// TODO: class doc
 public class CaesarKey extends Substitution {
 
     public CaesarKey(String key) {
-        super(caesarShifter(key));
+        if (!isValidKey(key)) {
+            throw new IllegalArgumentException();
+        }
+
+        setShifter(caesarKeyShifter(key));
     }
 
-    // generates shifter string from caaser cipher key string
-    private static String caesarShifter(String key) {
+    // generates shifter string from caeser cipher key string
+    private static String caesarKeyShifter(String key) {
         String shifter = key;
 
         for (char c : Cipher.getEncodableChars()) {
@@ -25,15 +28,16 @@ public class CaesarKey extends Substitution {
         }
 
         return shifter;
-
     }
 
     // checks whether key is valid:
     // if key is not empty,
     // if key does not contain duplicate chars,
     // if key does not contain any invalid chars outside the encodable range,
-    // returns true if valid and false if not.
+    // returns true if all are valid and false if at least one is not.
     private boolean isValidKey(String key) {
-        return !(key.isEmpty() || containsDuplicate(key) || containsInvalid(key));
+        return !(key.isEmpty() ||
+                containsDuplicate(key) ||
+                containsInvalid(key));
     }
 }

@@ -15,11 +15,11 @@ import java.io.*;
 public abstract class Cipher {
     // The minimum character able to be encrypted/decrypted by any cipher
     // (we encourage you to change this value when testing!)
-    public static final int MIN_CHAR = (int) ('A');
+    public static final int MIN_CHAR = (int) (' ');
 
     // The maximum character able to be encrypted/decrypted by any cipher
     // (we encourage you to change this value when testing!)
-    public static final int MAX_CHAR = (int) ('Z');
+    public static final int MAX_CHAR = (int) ('}');
 
     // The total number of characters able to be encrypted/decrypted by any cipher
     // (aka. the encodable range)
@@ -36,8 +36,8 @@ public abstract class Cipher {
         return (int) c - MIN_CHAR;
     }
 
-    //
-    public static List<Character> getEncodableChars() {
+    // creates and gives a list of the encodable chars in cipher
+    public static List<Character> getEncodableChars() { // would prefer to provide an iterable here
         List<Character> chars = new ArrayList<>();
         for (int c = MIN_CHAR; c <= MAX_CHAR; c++) {
             chars.add((char) c);
@@ -90,6 +90,7 @@ public abstract class Cipher {
             String line = sc.nextLine();
             ps.println(encrypt ? encrypt(line) : decrypt(line));
         }
+        ps.close();
     }
 
     // Behavior: Applies this Cipher's encryption scheme to 'input', returning the

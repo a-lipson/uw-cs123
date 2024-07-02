@@ -1,5 +1,7 @@
 package me.alipson.ciphers;
 
+import java.util.*;
+
 // Alexandre Lipson
 // 06/27/2024
 // CSE 123
@@ -20,11 +22,11 @@ public class Testing {
         // example test, we are using MIN_CHAR = A and MAX_CHAR = G
 
         // Skip this test if the constants have changed
-        // assumeTrue(Cipher.MIN_CHAR == (int) ('A') && Cipher.MAX_CHAR == (int) ('G'));
+        assumeTrue(Cipher.MIN_CHAR == (int) ('A') && Cipher.MAX_CHAR == (int) ('G'));
 
-        // Cipher testSubstitution = new Substitution("GCBEAFD");
-        // assertEquals("FGE", testSubstitution.encrypt("FAD"));
-        // assertEquals("BAD", testSubstitution.decrypt("CGE"));
+        Cipher testSubstitution = new Substitution("GCBEAFD");
+        assertEquals("FGE", testSubstitution.encrypt("FAD"));
+        assertEquals("BAD", testSubstitution.decrypt("CGE"));
 
         // Per the spec, we should throw an IllegalArgumentException if
         // the length of the shifter doesn't match the number of characters
@@ -39,8 +41,8 @@ public class Testing {
     public void subAZTest() {
         // Skip this test if the constants have changed
         assumeTrue(Cipher.MIN_CHAR == (int) ('A') && Cipher.MAX_CHAR == (int) ('Z'));
-        //
-        // // Reverse alphabetic
+
+        // Reverse alphabetic
         Cipher testSubstitution = new Substitution(
                 "ZYXWVUTSRQPONMLKJIHGFEDCBA");
         assertEquals("UZW", testSubstitution.encrypt("FAD"));
@@ -51,70 +53,52 @@ public class Testing {
     @DisplayName("EXAMPLE TEST CASE - ' '-'}' Shifter")
     public void subComplexTest() {
         // Skip this test if the constants have changed
-        // assumeTrue(Cipher.MIN_CHAR == (int) (' ') && Cipher.MAX_CHAR == (int) ('}'));
+        assumeTrue(Cipher.MIN_CHAR == (int) (' ') && Cipher.MAX_CHAR == (int) ('}'));
 
         // Swapping lowercase a<->b
-        // Cipher testSubstitution = new Substitution(
-        // " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`" +
-        // "bacdefghijklmnopqrstuvwxyz{|}");
-        // assertEquals("FAD", testSubstitution.encrypt("FAD"));
-        // assertEquals("fbd", testSubstitution.encrypt("fad"));
-        // assertEquals("BAD", testSubstitution.decrypt("BAD"));
-        // assertEquals("bad", testSubstitution.decrypt("abd"));
+        Cipher testSubstitution = new Substitution(
+                " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`" +
+                        "bacdefghijklmnopqrstuvwxyz{|}");
+        assertEquals("FAD", testSubstitution.encrypt("FAD"));
+        assertEquals("fbd", testSubstitution.encrypt("fad"));
+        assertEquals("BAD", testSubstitution.decrypt("BAD"));
+        assertEquals("bad", testSubstitution.decrypt("abd"));
     }
 
     @Test
-    @DisplayName("TODO: CaesarKey - 'A'-'Z'")
-    public void keyAZOne() {
+    @DisplayName("CaesarKey - 'A'-'Z'")
+    public void keyAZOne() { // can we rename tests?
         // Skip this test if the constants have changed
         assumeTrue(Cipher.MIN_CHAR == (int) ('A') && Cipher.MAX_CHAR == (int) ('Z'));
 
         CaesarKey testCaesarKey = new CaesarKey("TIN");
-        // TODO: Create a new CaesarKey("TIN"), encrypt the message "HELLO" and check
-        // the
-        // result's accurate. Then, take the encrypted message, decrypt it, and
-        // check the result's accurate
-        String test1 = testCaesarKey.encrypt("HELLO");
-        System.out.println(test1);
-        String test2 = testCaesarKey.decrypt("HELLO");
-        assertEquals(false, testCaesarKey.encrypt("HELLO"));
-        assertEquals("", testCaesarKey.decrypt("HELLO"));
+
+        assertEquals("EBJJM", testCaesarKey.encrypt("HELLO"));
+        assertEquals("HELLO", testCaesarKey.decrypt("EBJMM"));
     }
 
     @Test
-    @DisplayName("TODO: CaesarShift - 'A'-'Z' Shifter")
-    public void shiftAZOne() {
+    @DisplayName("CaesarShift - 'A'-'Z' Shifter")
+    public void shiftAZOne() { // can we raname tests?
         // Skip this test if the constants have changed
         assumeTrue(Cipher.MIN_CHAR == (int) ('A') && Cipher.MAX_CHAR == (int) ('Z'));
 
-        // TODO: Create a new CaesarShift(6), encrypt the message "HELLO" and check the
-        // result's accurate. Then, take the encrypted message, decrypt it, and
-        // check the result's accurate
-        assertEquals(true, false, "Assertion 1 not yet implemented!");
-        assertEquals(true, false, "Assertion 2 not yet implemented!");
+        CaesarShift testCaesarShift = new CaesarShift(6);
+
+        assertEquals("NKRRU", testCaesarShift.encrypt("HELLO"));
+        assertEquals("HELLO", testCaesarShift.decrypt("NKRRU"));
     }
 
     @Test
-    @DisplayName("TODO: MultiCipher - 'A'-'Z' Shifter")
+    @DisplayName("MultiCipher - 'A'-'Z' Shifter")
     public void multiAZOne() {
         // Skip this test if the constants have changed
         assumeTrue(Cipher.MIN_CHAR == (int) ('A') && Cipher.MAX_CHAR == (int) ('Z'));
 
-        // TODO: Create a new MultiCipher with ciphers CaesarKey("TIN") and
-        // CaesarShift(6)),
-        // encrypt the message "HELLO", and check the result's accurate. Then, take
-        // the encrypted message, decrypt it, and check the result's accurate
-        assertEquals(true, false, "Assertion 1 not yet implemented!");
-        assertEquals(true, false, "Assertion 2 not yet implemented!");
+        MultiCipher testMultiCipher = new MultiCipher(List.of(new CaesarKey("TIN"), new CaesarShift(6)));
+
+        assertEquals("KHPPS", testMultiCipher.encrypt("HELLO"));
+        assertEquals("HELLO", testMultiCipher.decrypt("KHPPS"));
     }
 
-    @Test
-    @DisplayName("Cipher Utility Method Tests")
-    public void testCipherUtilities() {
-        assertEquals(0, Cipher.getCharIndex('A'));
-        assertEquals(1, Cipher.getCharIndex('B'));
-
-        assumeTrue(Cipher.isValidChar('A'));
-        assumeTrue(!Cipher.isValidChar('a'));
-    }
 }

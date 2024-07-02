@@ -8,8 +8,7 @@ import java.util.*;
 // P1: Ciphers
 // TA: Daniel
 
-// TODO: Write your implementation to Subsitution here!
-
+// TODO: class doc
 public class Substitution extends Cipher {
 
     private String shifter;
@@ -18,17 +17,17 @@ public class Substitution extends Cipher {
     }
 
     public Substitution(String shifter) {
-        if (isValidShifter(shifter)) {
+        if (!isValidShifter(shifter)) {
             throw new IllegalArgumentException();
         }
 
         this.shifter = shifter;
     }
 
-    // sets the shifter string.
-    // throws an IllegalArgumentException if the shifter string is not valid.
+    // sets the shifter string
+    // throws an IllegalArgumentException if the shifter string is not valid
     public void setShifter(String shifter) {
-        if (isValidShifter(shifter)) {
+        if (!isValidShifter(shifter)) {
             throw new IllegalArgumentException();
         }
 
@@ -36,6 +35,8 @@ public class Substitution extends Cipher {
     }
 
     @Override
+    // TODO: method doc
+    // NOTE: no input validation
     public String encrypt(String input) {
         String ciphertext = "";
 
@@ -49,13 +50,15 @@ public class Substitution extends Cipher {
     }
 
     @Override
+    // TODO: method doc
+    // NOTE: no input validation
     public String decrypt(String input) {
         String plaintext = "";
 
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
             int index = shifter.indexOf(c);
-            plaintext += shifter.charAt(index);
+            plaintext += Cipher.getEncodableChars().get(index);
         }
 
         return plaintext;
@@ -65,11 +68,11 @@ public class Substitution extends Cipher {
     // if shifter length is equal to the length of the cipher key set,
     // if shifter does not contain duplicate chars,
     // if shifter does not contain any invalid chars outside the encodable range,
-    // returns true if valid and false if not.
+    // returns true if valid and false if not
     private boolean isValidShifter(String shifter) {
-        return shifter.length() == Cipher.TOTAL_CHARS ||
-                !containsDuplicate(shifter) ||
-                !containsInvalid(shifter);
+        return !(shifter.length() != Cipher.TOTAL_CHARS ||
+                containsDuplicate(shifter) ||
+                containsInvalid(shifter));
     }
 
     // checks if a shifter key contains duplicate chars,
