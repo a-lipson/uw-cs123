@@ -8,10 +8,20 @@ import java.util.*;
 // P1: Ciphers
 // TA: Daniel
 
-// TODO: class doc
+/**
+ * Provides a way to combine multiple ciphers in series for encryption and
+ * decryption
+ */
 public class MultiCipher extends Substitution {
     private List<Cipher> ciphers;
 
+    /**
+     * Default constructor for MultiCipher
+     * 
+     * @param ciphers the list of ciphers to use.
+     * 
+     * @throws IllegalArgumentException if the list of ciphers is null.
+     */
     public MultiCipher(List<Cipher> ciphers) {
         if (ciphers == null) {
             throw new IllegalArgumentException();
@@ -20,6 +30,13 @@ public class MultiCipher extends Substitution {
         this.ciphers = ciphers;
     }
 
+    /**
+     * Encrypts input using the series of shifters from the cipher list.
+     * 
+     * @param input the input String to encrypt.
+     * 
+     * @return the encrypted String.
+     */
     @Override
     public String encrypt(String input) {
         String ciphertext = input; // could use one variable
@@ -31,6 +48,13 @@ public class MultiCipher extends Substitution {
         return ciphertext;
     }
 
+    /**
+     * Decrypts input using the series of shifters from the cipher list.
+     * 
+     * @param input the input String to decrypt.
+     * 
+     * @return the decrypted String.
+     */
     @Override
     public String decrypt(String input) {
         String plaintext = input;

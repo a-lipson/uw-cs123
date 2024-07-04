@@ -31,12 +31,22 @@ public abstract class Cipher {
         return MIN_CHAR <= c && c <= MAX_CHAR;
     }
 
-    // gives the int position of an inputted char in the endodable range.
+    /**
+     * Gives the int position of an inputted char in the endodable range.
+     * 
+     * @param c the character to get the position of in the encodable range.
+     * 
+     * @return the position of the input character in the encodable range.
+     */
     public static int getCharIndex(char c) {
         return (int) c - MIN_CHAR;
     }
 
-    // creates and gives a list of the encodable chars in cipher
+    /**
+     * Creates and gives a list of the encodable chars in cipher
+     * 
+     * @return the list of all characters in the encodable range.
+     */
     public static List<Character> getEncodableChars() { // would prefer to provide an iterable here
         List<Character> chars = new ArrayList<>();
         for (int c = MIN_CHAR; c <= MAX_CHAR; c++) {

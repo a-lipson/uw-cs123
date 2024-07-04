@@ -8,9 +8,18 @@ import java.util.*;
 // P1: Ciphers
 // TA: Daniel
 
-// TODO: class doc
+/**
+ * A simple alphebetic substitution ciphers which shifts each letter of the
+ * alphabet by a given amount to the left.
+ */
 public class CaesarShift extends Substitution {
 
+    /**
+     * Default constructor for CaesarShfit which validates the shifting position and
+     * sets the shifter.
+     * 
+     * @param shift the number of positions int to shift.
+     */
     public CaesarShift(int shift) {
         if (shift <= 0) {
             throw new IllegalArgumentException();
@@ -19,7 +28,13 @@ public class CaesarShift extends Substitution {
         setShifter(caesarShifter(shift));
     }
 
-    // create a shifter string from the provided int shift positions
+    /**
+     * Create a shifter string from the provided int shift positions.
+     * 
+     * @param shift the number of positions int to shift.
+     * 
+     * @return the adjusted shifter String.
+     */
     private String caesarShifter(int shift) {
         Queue<Character> encodableChars = new LinkedList<>(Cipher.getEncodableChars());
 
