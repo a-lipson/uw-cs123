@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>project_1_extracredit</name>
-	<comment>Project project_1_extra-credit created by Buildship.</comment>
+	<name>project_1_strategy</name>
+	<comment>Project creative_2_abstract-strategy created by Buildship.</comment>
 	<projects>
 	</projects>
 	<buildSpec>
@@ -22,11 +22,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-<<<<<<< HEAD
-			<id>1720068471951</id>
-=======
-			<id>1720209997769</id>
->>>>>>> 05554a6 (work on creative project 2)
+			<id>1720202330052</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
