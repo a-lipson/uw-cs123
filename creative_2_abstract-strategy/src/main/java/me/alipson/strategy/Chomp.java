@@ -1,7 +1,6 @@
 package me.alipson.strategy;
 
 import java.util.*;
-import java.util.regex.*;
 
 /**
  * TODO: class documentation
@@ -50,14 +49,28 @@ public class Chomp extends AbstractStrategyGame {
         if (board[0][0] != 0) {
             return -1;
         }
-        return firstPlayerTurn ? 1 : 2;
+        return getCurrentPlayerIndex();
     }
 
+    /**
+     * Returns the index of the next player.
+     * 
+     * @return the next player's index int.
+     */
     @Override
     public int getNextPlayer() {
         if (isGameOver()) {
             return -1;
         }
+        return getCurrentPlayerIndex();
+    }
+
+    /**
+     * Gets the current active player.
+     * 
+     * @return the current player's index int.
+     */
+    private int getCurrentPlayerIndex() {
         return firstPlayerTurn ? 1 : 2;
     }
 
@@ -66,13 +79,24 @@ public class Chomp extends AbstractStrategyGame {
      */
     @Override
     public void makeMove(Scanner input) throws IllegalArgumentException {
-        if (!parseMove(input.nextLine())) {
+        System.out.print("Chomp location > ");
+
+        processMove(input.nextLine());
+
+        firstPlayerTurn = !firstPlayerTurn;
+    }
+
+    /**
+     * Processes the user's move
+     */
+    private void processMove(String input) throws IllegalArgumentException {
+        if (!parseMove(input)) {
             throw new IllegalArgumentException("Cannot interpret move.");
         }
 
         int currentLayer = board[lastMove.x][lastMove.y];
 
-        if (currentLayer == 0) {
+        if (currentLayer == 0) { // don't chomp on the last layer
             throw new IllegalArgumentException("Cannot chomp empty volume.");
         }
 
@@ -84,8 +108,6 @@ public class Chomp extends AbstractStrategyGame {
                 }
             }
         }
-
-        firstPlayerTurn = !firstPlayerTurn;
     }
 
     /**
