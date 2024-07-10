@@ -77,7 +77,7 @@ public class PaperTennis extends AbstractStrategyGame {
         currentPlayer.lastBid = bid;
 
         // attempt clear the screen (works on Unix terminals only)
-        // so that the second player can't see the first player's bid
+        // so that the second player can't see the first player's bid or remainder
         System.out.print("\033[H\033[2J");
         System.out.flush();
 
@@ -111,7 +111,7 @@ public class PaperTennis extends AbstractStrategyGame {
     public String toString() {
         String out = court.courtHistory;
         // only update court history after both bids have been made
-        if (!firstPlayerTurn) {
+        if (firstPlayerTurn) {
             out += makeCourtRow();
             court.courtHistory = out;
         }
