@@ -55,7 +55,8 @@ public class Chomp extends AbstractStrategyGame {
     /**
      * Returns the index of the next player.
      * 
-     * @return the next player's index int.
+     * @return the player index int; <code>1<\code> for player one, and
+     *         <code>2<\code> for player two.
      */
     @Override
     public int getNextPlayer() {
@@ -75,6 +76,8 @@ public class Chomp extends AbstractStrategyGame {
     }
 
     /**
+     * TODO: finish documentation
+     * 
      * @see #parseMove(String)
      */
     @Override
@@ -184,21 +187,21 @@ public class Chomp extends AbstractStrategyGame {
 
     // getters for Chomp2#toString
 
-    public int getWidth() {
-        return this.width;
-    }
-
-    public int getHeight() {
-        return this.height;
-    }
-
-    public int getLayers() {
-        return this.layers;
-    }
-
-    public int[][] getBoard() {
-        return this.board;
-    }
+    // public int getWidth() {
+    // return this.width;
+    // }
+    //
+    // public int getHeight() {
+    // return this.height;
+    // }
+    //
+    // public int getLayers() {
+    // return this.layers;
+    // }
+    //
+    // public int[][] getBoard() {
+    // return this.board;
+    // }
 
     /**
      * A 2D Vector object to store a game move with x and y coordinates as fields.
