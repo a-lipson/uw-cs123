@@ -2,8 +2,9 @@ package me.alipson.strategy;
 
 import java.util.*;
 
+/**
+*/
 public class PaperTennis extends AbstractStrategyGame {
-    // default init value for boolean is false
     private boolean firstPlayerTurn;
     private Scoreboard scoreboard;
     private Court court;
@@ -23,7 +24,7 @@ public class PaperTennis extends AbstractStrategyGame {
 
     @Override
     public int getWinner() {
-        if (scoreboard.currentRound < scoreboard.maxRounds) { // game still in progress
+        if (scoreboard.currentRound <= scoreboard.maxRounds) { // game still in progress
             return -1;
         }
 
@@ -43,12 +44,24 @@ public class PaperTennis extends AbstractStrategyGame {
         if (!(scoreboard.isRoundOver() || court.isBallOutsideCourt())) {
             return -1;
         }
+        if (court.ballPosition == 0) { // a tie, somehow
+            return 0;
+        }
         // first player's side is negative, second player's is positive
-        return court.ballPosition < 0 ? 1 : 2;
+        return court.ballPosition > 0 ? 1 : 2;
     }
 
-    private void assignRoundScore() {
+    /**
+    */
+    private void assignRoundScore(int roundWinner) {
+        // extra point for knocking ball out of the court
+        int roundScore = court.isBallOutsideCourt() ? 2 : 1;
 
+        if (roundWinner == 1) {
+            scoreboard.playerOneScore.roundsWon += roundScore;
+        } else if (roundWinner == 2) {
+            scoreboard.playerTwoScore.roundsWon += roundScore;
+        }
     }
 
     @Override
@@ -66,40 +79,52 @@ public class PaperTennis extends AbstractStrategyGame {
     @Override
     public void makeMove(Scanner input) throws IllegalArgumentException {
 
-        if (getRoundWinner() != -1) { // round is finished
-            court.reset();
+        int roundWinner = getRoundWinner();
+
+        if (roundWinner != -1) { // round is finished
+            assignRoundScore(roundWinner); // could call in getRoundWinner method
+
+            System.out.printf(
+                    "Round %d/%d is over! Player %d won%s.\nCurrent scores:\n\tP1: %d\tP2: %d\n",
+                    scoreboard.currentRound, scoreboard.maxRounds, roundWinner,
+                    court.isBallOutsideCourt() ? " with a bonus point" : "",
+                    scoreboard.playerOneScore.roundsWon, scoreboard.playerTwoScore.roundsWon);
+
             scoreboard.reset();
+            court.reset();
+            // court.courtHistory = makeCourtRow(); // could be included in reset method
 
-            assignRoundScore();
+            scoreboard.currentRound++;
+        } else { // simulate a void return statement
+
+            Scoreboard.PlayerScore currentPlayer = firstPlayerTurn ? scoreboard.playerOneScore
+                    : scoreboard.playerTwoScore;
+
+            System.out.printf(
+                    "Enter your score bid (%s remaining) > ", currentPlayer.currentScore);
+
+            int bid = input.nextInt();
+
+            if (bid < 0 || bid > currentPlayer.currentScore) {
+                throw new IllegalArgumentException("Invalid bid amount.");
+            }
+
+            currentPlayer.currentScore -= bid;
+            currentPlayer.lastBid = bid;
+
+            // evaluate ball after both players have bid, on second player's turn
+            if (!firstPlayerTurn) {
+                court.sendBall(scoreboard.bidDifference());
+            }
+
+            // next player on successful move
+            firstPlayerTurn = !firstPlayerTurn;
+
+            // attempt clear the screen (works on Unix terminals only)
+            // so that the second player can't see the first player's bid or remainder
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
         }
-
-        Scoreboard.PlayerScore currentPlayer = firstPlayerTurn ? scoreboard.playerOneScore
-                : scoreboard.playerTwoScore;
-
-        System.out.print(String.format(
-                "Enter your score bid (%s remaining) > ", currentPlayer.currentScore));
-
-        int bid = input.nextInt();
-
-        if (bid < 0 || bid > currentPlayer.currentScore) {
-            throw new IllegalArgumentException("Invalid bid amount.");
-        }
-
-        currentPlayer.currentScore -= bid;
-        currentPlayer.lastBid = bid;
-
-        // attempt clear the screen (works on Unix terminals only)
-        // so that the second player can't see the first player's bid or remainder
-        // System.out.print("\033[H\033[2J");
-        // System.out.flush();
-
-        // evaluate ball after both players have bid, on second player's turn
-        if (!firstPlayerTurn) {
-            court.sendBall(scoreboard.bidDifference());
-        }
-
-        // next player on successful move
-        firstPlayerTurn = !firstPlayerTurn;
     }
 
     /**
@@ -218,7 +243,6 @@ public class PaperTennis extends AbstractStrategyGame {
     private class Scoreboard {
         private int maxRounds;
         private int currentRound;
-        private int startingScore;
 
         private PlayerScore playerOneScore;
         private PlayerScore playerTwoScore;
@@ -228,8 +252,7 @@ public class PaperTennis extends AbstractStrategyGame {
 
         public Scoreboard(int maxRounds, int startingScore) {
             this.maxRounds = maxRounds;
-            this.currentRound = 0;
-            this.startingScore = startingScore;
+            this.currentRound = 1;
 
             this.playerOneScore = new PlayerScore(startingScore);
             this.playerTwoScore = new PlayerScore(startingScore);

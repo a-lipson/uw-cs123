@@ -6,8 +6,8 @@ public class Client {
     public static void main(String[] args) {
         Scanner console = new Scanner(System.in);
 
-        AbstractStrategyGame game = new Chomp(6, 7, 3);
-        // AbstractStrategyGame game = new PaperTennis();
+        // AbstractStrategyGame game = new Chomp(6, 7, 3);
+        AbstractStrategyGame game = new PaperTennis();
 
         System.out.println(game.instructions());
         System.out.println();

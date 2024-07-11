@@ -3,8 +3,11 @@ package me.alipson.strategy;
 import java.util.*;
 
 /**
- * TODO: class documentation
- * Chomp game
+ * Chomp is an AbstractStrategyGame that has two players who take turns removing
+ * volumes from a grid.
+ * The game class offers two- and three-dimensional game arrays.
+ * Each chomp action removes grid cells below and to the right, but only on the
+ * same layer, of the chosen cell.
  */
 public class Chomp extends AbstractStrategyGame {
 
@@ -76,8 +79,11 @@ public class Chomp extends AbstractStrategyGame {
     }
 
     /**
-     * TODO: finish documentation
+     * Takes the users input to make a move in game and changes current turn.
      * 
+     * @param input the Scanner input to process.
+     * 
+     * @throws IllegalArgumentException if the input cannot be processed.
      * @see #parseMove(String)
      */
     @Override
@@ -90,24 +96,31 @@ public class Chomp extends AbstractStrategyGame {
     }
 
     /**
-     * Processes the user's move
+     * Processes the user's move by removing decrementing the lower right grid cells
+     * in the game board until zero.
+     * 
+     * @param input the input line String to process.
+     * 
+     * @throws IllegalArgumentException if move cannot be parsed to a valid move
+     *                                  object.
+     * @see #parseMove(String)
      */
     private void processMove(String input) throws IllegalArgumentException {
         if (!parseMove(input)) {
             throw new IllegalArgumentException("Cannot interpret move.");
         }
 
-        int currentLayer = board[lastMove.x][lastMove.y];
+        int currentLayer = board[lastMove.y][lastMove.x];
 
         if (currentLayer == 0) { // don't chomp on the last layer
             throw new IllegalArgumentException("Cannot chomp empty volume.");
         }
 
-        for (int x = lastMove.x; x < width; x++) {
-            for (int y = lastMove.y; y < height; y++) {
+        for (int y = lastMove.y; y < height; y++) {
+            for (int x = lastMove.x; x < width; x++) {
                 // only chomp on current layer
-                if (board[x][y] == currentLayer) {
-                    board[x][y]--;
+                if (board[y][x] == currentLayer) {
+                    board[y][x]--;
                 }
             }
         }
@@ -131,8 +144,8 @@ public class Chomp extends AbstractStrategyGame {
         String[] moveCoords = input.split(",");
 
         // assuming that parsings will pass because of regex match sentinel
-        int x = Integer.parseUnsignedInt(moveCoords[0].trim());
-        int y = Integer.parseUnsignedInt(moveCoords[1].trim());
+        int y = Integer.parseUnsignedInt(moveCoords[0].trim());
+        int x = Integer.parseUnsignedInt(moveCoords[1].trim());
 
         this.lastMove = new Move(x, y);
 
@@ -145,11 +158,11 @@ public class Chomp extends AbstractStrategyGame {
      * @return a new int[][] with full layers.
      */
     private int[][] newBoard() {
-        board = new int[width][height];
+        board = new int[height][width];
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                board[x][y] = layers;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                board[y][x] = layers;
             }
         }
 
@@ -164,8 +177,13 @@ public class Chomp extends AbstractStrategyGame {
     @Override
     public String instructions() {
         return """
-                    Instructions Here!
-                """;
+                Instructions:
+                Player 1 goes first and choses a grid point to chomp using an x,y coordinate pair,
+                where the origin is the top left of the game array.
+                When a square is chomped, all other squares to the right and below that are on the same layer
+                get chomped too!
+                The game ends when a player takes the top-left square and loses.
+                                """;
     }
 
     /**
@@ -178,30 +196,12 @@ public class Chomp extends AbstractStrategyGame {
         String result = "";
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                result += board[x][y] + " ";
+                result += board[y][x] + " ";
             }
             result += "\n";
         }
         return result;
     }
-
-    // getters for Chomp2#toString
-
-    // public int getWidth() {
-    // return this.width;
-    // }
-    //
-    // public int getHeight() {
-    // return this.height;
-    // }
-    //
-    // public int getLayers() {
-    // return this.layers;
-    // }
-    //
-    // public int[][] getBoard() {
-    // return this.board;
-    // }
 
     /**
      * A 2D Vector object to store a game move with x and y coordinates as fields.
