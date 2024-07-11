@@ -143,6 +143,8 @@ public class Chomp extends AbstractStrategyGame {
         // could use regex groups, but those still require int parsing
         String[] moveCoords = input.split(",");
 
+        // HACK: assign inverted y and x coords because that seems to work
+
         // assuming that parsings will pass because of regex match sentinel
         int y = Integer.parseUnsignedInt(moveCoords[0].trim());
         int x = Integer.parseUnsignedInt(moveCoords[1].trim());
