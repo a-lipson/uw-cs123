@@ -1,4 +1,4 @@
-package removeAll;
+package me.alipson.removeall;
 
 public class LinkedIntList {
     private ListNode front;
@@ -13,10 +13,29 @@ public class LinkedIntList {
 
     /* TODO: */
     // implement removeAll() below
+    public int removeAll(int toRemove) {
+        if (front == null) { // empty check
+            return 0;
+        }
 
+        int count = 0;
 
+        ListNode curr = front;
 
+        while (curr.next != null) {
+            if (curr.data == toRemove) {
+                curr = curr.next;
+                count++;
+            }
 
+            curr = curr.next;
+        }
+
+        // update the object's list
+        this.front = curr;
+
+        return count;
+    }
 
     // Constructs a list containing the given elements
     public LinkedIntList(int... elements) {
@@ -30,7 +49,7 @@ public class LinkedIntList {
         }
         size = elements.length;
     }
-    
+
     public void add(int value) {
         if (front == null) {
             front = new ListNode(value);

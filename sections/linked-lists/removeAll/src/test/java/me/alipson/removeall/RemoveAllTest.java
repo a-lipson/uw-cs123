@@ -1,4 +1,4 @@
-package removeAll;
+package me.alipson.removeall;
 
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -7,7 +7,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.*;
 import java.util.*;
 import org.junit.Test; // for @Test
-
 
 public class RemoveAllTest {
 
