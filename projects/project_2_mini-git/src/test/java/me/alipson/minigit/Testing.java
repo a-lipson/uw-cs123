@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 
-public class ExampleTesting {
+public class Testing {
     private Repository repo1;
     private Repository repo2;
 
@@ -17,60 +17,39 @@ public class ExampleTesting {
         Repository.Commit.resetIds();
     }
 
+    /*
+     * TODO: Write your tests here! Remember that you must either use the helper
+     * methods below, or make sure to Thread.sleep between individual commits.
+     * Write 3 of your own test cases for synchronize covering the different
+     * LinkedList cases we've talked about in class: Front, Middle, and Last. Each
+     * of these test cases should be contained within their own method in your
+     * Testing class.
+     */
+
     @Test
-    @DisplayName("EXAMPLE TEST - getHistory()")
-    public void getHistory() throws InterruptedException {
-        // Initialize commit messages
-        String[] commitMessages = new String[] { "Initial commit.",
-                "Updated method documentation.",
-                "Removed unnecessary object creation." };
-        commitAll(repo1, commitMessages);
-        testHistory(repo1, 1, commitMessages);
+    public void testEmptySynchronize() {
+
     }
 
     @Test
-    @DisplayName("EXAMPLE TEST - drop() (empty case)")
-    public void testDropEmpty() {
-        assertFalse(repo1.drop("123"));
+    public void testFrontSynchronize() {
+
     }
 
     @Test
-    @DisplayName("EXAMPLE TEST - drop() (front case)")
-    public void testDropFront() throws InterruptedException {
-        // Initialize commit messages
-        commitAll(repo1, new String[] { "First commit" }); // ID "0"
-        commitAll(repo2, new String[] { "Added unit tests." }); // ID "1"
+    public void testMiddleSynchronize() {
 
-        // Assert that repo1 successfully dropped "0"
-        assertTrue(repo1.drop("0"));
-        assertEquals(repo1.getRepoSize(), 0);
-
-        // Assert that repo2 does not drop "0" but drops "1"
-        // (Note that the commit ID increments regardless of the repository!)
-        assertFalse(repo2.drop("0"));
-        assertTrue(repo2.drop("1"));
-        assertEquals(repo2.getRepoSize(), 0);
     }
 
     @Test
-    @DisplayName("EXAMPLE TEST - synchronize() (one: [1, 2], two: [3, 4])")
-    public void testSynchronizeOne() throws InterruptedException {
-        // Initialize commit messages
-        commitAll(repo1, new String[] { "One", "Two" });
-        commitAll(repo2, new String[] { "Three", "Four" });
+    public void testLastSynchronize() {
 
-        // Make sure both repos got exactly 2 commits each
-        assertEquals(2, repo1.getRepoSize());
-        assertEquals(2, repo2.getRepoSize());
-
-        // Synchronize repo2 into repo1
-        repo1.synchronize(repo2);
-        assertEquals(4, repo1.getRepoSize());
-        assertEquals(0, repo2.getRepoSize());
-
-        // Make sure the history of repo1 is correctly synchronized
-        testHistory(repo1, 4, new String[] { "One", "Two", "Three", "Four" });
     }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // PROVIDED HELPER METHODS (You don't have to use these if you don't want to!)
+    ///////////////////////////////////////////////////////////////////////////////// //
+    /////////////////////////////////////////////////////////////////////////////////
 
     // Commits all of the provided messages into the provided repo, making sure
     // timestamps

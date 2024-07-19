@@ -1,3 +1,5 @@
+package me.alipson.minigit;
+
 import java.util.*;
 
 // A program to work with Mini-Git. Manages the state of repositories and allows for all
@@ -7,7 +9,7 @@ public class Client {
 
     public static void main(String[] args) {
         Collections.addAll(ops, "create", "head", "history", "commit", "drop",
-                           "synchronize", "quit");
+                "synchronize", "quit");
         Scanner console = new Scanner(System.in);
         Map<String, Repository> repos = new HashMap<>();
         String op = "";
