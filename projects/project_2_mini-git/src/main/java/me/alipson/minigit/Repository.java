@@ -192,22 +192,9 @@ public class Repository {
     }
 
     /**
-     * Takes all the commits in the other repository and moves them into this
+     * Takes all the commits from the other repository and moves them into this
      * repository, combining the two repository histories such that chronological
-     * order is preserved. That is, after executing this method, this repository
-     * should contain all commits that were from this and other, and the commits
-     * should be ordered in timestamp order from most recent to least recent.
-     * 
-     * If the other repository is empty, this repository should remain unchanged.
-     * 
-     * If this repository is empty, all commits in the other repository should be
-     * moved into this repository.
-     * 
-     * At the end of this method's execution, other should be an empty repository in
-     * all cases.
-     * 
-     * You should not construct any new Commit objects to implement this method. You
-     * may however create as many references as you like.
+     * order is preserved, and empties the other repository of all commits.
      * 
      * @param other the other Repository to synchronize into the caller.
      */
