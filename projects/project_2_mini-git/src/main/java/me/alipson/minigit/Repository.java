@@ -227,8 +227,6 @@ public class Repository {
             this.head = otherCurr;
             otherCurr = otherCurr.past;
             this.head.past = thisCurr;
-            // thisCurr = other.head;
-            // otherCurr = this.head;
         }
 
         // middle
@@ -239,9 +237,6 @@ public class Repository {
                 otherCurr = otherCurr.past;
                 temp.past = thisCurr.past;
                 thisCurr.past = temp;
-                // Commit thisPast = thisCurr.past;
-                // thisCurr.past = otherCurr;
-                // otherCurr = thisPast;
             }
             thisCurr = thisCurr.past;
         }
