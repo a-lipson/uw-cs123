@@ -65,6 +65,7 @@ public class ExampleTesting {
 
         // Synchronize repo2 into repo1
         repo1.synchronize(repo2);
+
         assertEquals(4, repo1.getRepoSize());
         assertEquals(0, repo2.getRepoSize());
 

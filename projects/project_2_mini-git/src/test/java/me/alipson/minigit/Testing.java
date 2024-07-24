@@ -1,5 +1,11 @@
 package me.alipson.minigit;
 
+// Alexandre Lipson
+// 07/24/2024
+// CSE 123 
+// P2: Mini-Git
+// TA: Daniel
+
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
@@ -7,6 +13,10 @@ import java.util.*;
 public class Testing {
     private Repository repo1;
     private Repository repo2;
+
+    private String commit = "test";
+    private String[] commits1 = { "this", "is", "a", "test" };
+    private String[] commits2 = { "THIS", "IS", "A", "TEST" };
 
     // Occurs before each of the individual test cases
     // (creates new repos and resets commit ids)
@@ -26,24 +36,103 @@ public class Testing {
      * Testing class.
      */
 
-    @Test
-    public void testEmptySynchronize() {
+    /*
+     * Repository#synchronize Tests
+     */
 
+    @Test
+    public void testEmptySynchronize() throws InterruptedException {
+        // both empty
+        repo1.synchronize(repo2);
+        assertEquals(0, repo1.getRepoSize());
+        assertEquals(0, repo2.getRepoSize());
+
+        // repo1 empty
+        commitAll(repo2, commits1);
+
+        repo1.synchronize(repo2);
+
+        testHistory(repo1, commits1.length, commits1);
+
+        assertEquals(0, repo2.getRepoSize());
     }
 
     @Test
-    public void testFrontSynchronize() {
+    public void testFrontSynchronize() throws InterruptedException {
+        // repo2 head more recent
+        commitAll(repo1, commits1);
+        Thread.sleep(1);
+        commitAll(repo2, commits2);
 
+        repo1.synchronize(repo2);
+
+        assertEquals(8, repo1.getRepoSize());
+        assertEquals(0, repo2.getRepoSize());
+
+        testHistory(repo1, commits2.length, commits2);
     }
 
     @Test
-    public void testMiddleSynchronize() {
+    public void testMiddleSynchronize() throws InterruptedException {
+        repo1.commit(commits1[3]);
+        Thread.sleep(1);
+        repo2.commit(commits1[2]);
+        Thread.sleep(1);
+        repo1.commit(commits1[1]);
+        Thread.sleep(1);
+        repo2.commit(commits1[0]);
 
+        repo1.synchronize(repo2);
+
+        testHistory(repo1, commits1.length, commits1);
+        assertEquals(repo1.getRepoSize(), 4);
+        assertEquals(repo2.getRepoSize(), 0);
     }
 
     @Test
-    public void testLastSynchronize() {
+    public void testLastSynchronize() throws InterruptedException {
+        // repo2 empty
+        commitAll(repo1, commits1);
 
+        repo1.synchronize(repo2);
+
+        testHistory(repo1, commits1.length, commits1);
+    }
+
+    /*
+     * Other Repository Tests
+     */
+
+    @Test
+    public void testGetHistory() throws InterruptedException {
+        commitAll(repo1, commits1);
+
+        testHistory(repo1, 4, commits1);
+
+        testHistory(repo1, 3, Arrays.copyOfRange(commits1, 0, 3));
+    }
+
+    @Test
+    public void testCommit() {
+        repo1.commit(commit);
+
+        // testHistory(repo1, 1, commit);
+    }
+
+    @Test
+    public void testContains() {
+        repo1.commit(commit);
+        // repo1.commit(commit);
+        assertTrue(repo1.contains("0"));
+    }
+
+    @Test
+    public void testDrop() {
+        repo1.commit(commit);
+
+        repo1.drop("0");
+
+        assertFalse(repo1.contains("0"));
     }
 
     /////////////////////////////////////////////////////////////////////////////////

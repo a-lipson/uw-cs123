@@ -80,6 +80,7 @@ public class Client {
             }
             System.out.println();
         }
+        console.close();
     }
 
     // Prints out an introduction to the Mini-Git test client.

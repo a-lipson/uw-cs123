@@ -10,7 +10,14 @@ import java.util.*;
 import java.text.SimpleDateFormat;
 
 /**
- * Repository to story commits
+ * Repository stores a list of Commits and has the following actions:
+ * 
+ * @see #drop(String) drops a commit from the history
+ * @see #commit(String) adds a new commit head to the top of the history
+ * @see #contains(String) checks if the repo contains a given commit
+ * @see #synchronize(Repository) merges two repositories together, sorting by
+ *      commit time stamp
+ * @see #getHistory(int) gives the repo history up to a number of commits
  */
 public class Repository {
 
@@ -55,6 +62,7 @@ public class Repository {
 
         while (curr != null) {
             curr = curr.past;
+            size++;
         }
 
         return size;
@@ -89,7 +97,7 @@ public class Repository {
         Commit curr = head;
 
         while (curr != null) {
-            if (targetId == curr.id) {
+            if (targetId.equals(curr.id)) {
                 return true;
             }
             curr = curr.past;
@@ -156,7 +164,31 @@ public class Repository {
      *         the given ID in the repository.
      */
     public boolean drop(String targetId) {
-        return false;
+        if (head == null) { // empty: cannot drop commits from empty repo
+            return false;
+        }
+
+        if (head.id.equals(targetId)) { // first: drop first commit
+            head = head.past;
+            return true;
+        }
+
+        Commit curr = head;
+        Commit prev = null;
+
+        // NOTE: could consolidate logic with #contains(String) for read iterating over
+        // repos
+
+        while (curr != null) {
+            if (curr.id.equals(targetId)) {
+                prev.past = curr.past; // unlink target
+                return true;
+            }
+            prev = curr; // move to next
+            curr = curr.past;
+        }
+
+        return false; // target id not present in history
     }
 
     /**
@@ -176,8 +208,50 @@ public class Repository {
      * 
      * You should not construct any new Commit objects to implement this method. You
      * may however create as many references as you like.
+     * 
+     * @param other the other Repository to synchronize into the caller.
      */
     public void synchronize(Repository other) {
+        // empty: no commits in this head
+        if (this.head == null) {
+            this.head = other.head;
+            other.head = null;
+        }
+
+        Commit thisCurr = this.head;
+        Commit otherCurr = other.head;
+
+        // front: other head is more recent
+        if (otherCurr != null && otherCurr.timeStamp > thisCurr.timeStamp) {
+            // swap this and other heads if other head commit is more recent
+            this.head = otherCurr;
+            otherCurr = otherCurr.past;
+            this.head.past = thisCurr;
+            // thisCurr = other.head;
+            // otherCurr = this.head;
+        }
+
+        // middle
+        while (thisCurr.past != null && otherCurr != null) {
+            if (otherCurr.timeStamp > thisCurr.past.timeStamp) { // lastest other is more recent
+                // insert other head commit before this past
+                Commit temp = otherCurr;
+                otherCurr = otherCurr.past;
+                temp.past = thisCurr.past;
+                thisCurr.past = temp;
+                // Commit thisPast = thisCurr.past;
+                // thisCurr.past = otherCurr;
+                // otherCurr = thisPast;
+            }
+            thisCurr = thisCurr.past;
+        }
+
+        // end: append remaining commits from other
+        if (thisCurr.past == null) {
+            thisCurr.past = otherCurr;
+        }
+
+        other.head = null;
     }
 
     /**
