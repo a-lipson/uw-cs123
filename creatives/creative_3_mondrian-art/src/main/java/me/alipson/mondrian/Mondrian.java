@@ -16,27 +16,41 @@ public class Mondrian {
     private Color[][] pixels;
 
     private static final Color[] COLORS = { Color.RED, Color.YELLOW, Color.CYAN, Color.WHITE };
-    private static final int SPLIT_BUFFER = 10;
+    private static final int MIN_CELL_SIZE = 10;
 
     /**
-     * Factory method for starting a new Mondrian art.
+     * Factory method for starting a new Mondrian art by initializing
+     * height and width fields using input Color[][] pixels.
      *
      * @param pixels the Color[][] pixels on which create the Mondrian art.
      */
-    public void Of(Color[][] pixels) {
+    private void Of(Color[][] pixels) {
         this.height = pixels.length;
         this.width = pixels[0].length;
         this.pixels = pixels;
     }
 
     /**
+     * Sets the input Color[][] pixels to a Mondrian painting
+     * of randomly painted rectangular regions.
+     * 
+     * @param pixels the input Color[][] pixels to modify
+     *
+     * @see #basicHelper(Region, Random)
      */
     public void paintBasicMondrian(Color[][] pixels) {
         Of(pixels);
-        basicHelper(new Region(new Point(0, width), new Point(0, height)), new Random());
+        basicHelper(new Region(new Point(0, 0), new Point(width, height)), new Random());
     }
 
     /**
+     * Recursive helper method for basic Mondrian painter; recursively splits input
+     * Region after minimal size checks and, as the base case, fills in the Region
+     * with a random Color color.
+     * 
+     * @param region the Region region to measure and either subdivide into more
+     *               regions if large enough, or paint if of a terminally small size
+     * @param rand   the seeded Random object to use
      */
     private void basicHelper(Region region, Random rand) {
 
@@ -59,11 +73,25 @@ public class Mondrian {
     }
 
     /**
+     * @see #complexHelper(Region, Random)
      */
     public void paintComplexMondrian(Color[][] pixels) {
+        Of(pixels);
+        complexHelper(new Region(new Point(0, 0), new Point(width, height)), new Random());
     }
 
     /**
+    */
+    private void complexHelper(Region region, Random rand) {
+
+    }
+
+    /**
+     * Gives a random Color color from the valid COLORS constant array.
+     * 
+     * @param rand the seeded Random object to use
+     * 
+     * @return the random Color color.
      */
     private Color randomBasicColor(Random rand) {
         return COLORS[rand.nextInt(COLORS.length)];
@@ -80,12 +108,27 @@ public class Mondrian {
         Point topLeft;
         Point botRight;
 
+        /**
+         * Creates a new Region object defined by two Point coordinate bounds.
+         * 
+         * @param topLeft  the top left Point coordinate
+         * @param botright the bottom right Point coordinate
+         */
         public Region(Point topLeft, Point botRight) {
             this.topLeft = topLeft;
             this.botRight = botRight;
         }
 
         // FIX: way to not create so many new objects?
+
+        /**
+         * Splits a Region into two new Regions with a random
+         * horizontal divider.
+         * 
+         * @param rand the seeded Random object to use
+         * 
+         * @return the fixed Region[2] array of new Region objects.
+         */
         public Region[] splitHorizontal(Random rand) {
             int midY = chooseRandomHorizontalDivider(rand);
             return new Region[] {
@@ -93,6 +136,14 @@ public class Mondrian {
                     new Region(new Point(topLeft.x, midY), botRight) };
         }
 
+        /**
+         * Splits a Region into two new Regions with a random
+         * vertical divider.
+         * 
+         * @param rand the seeded Random object to use
+         * 
+         * @return the fixed Region[2] array of new Region objects.
+         */
         public Region[] splitVertical(Random rand) {
             int midX = chooseRandomVerticalDivider(rand);
             return new Region[] {
@@ -100,6 +151,14 @@ public class Mondrian {
                     new Region(new Point(midX, topLeft.y), botRight) };
         }
 
+        /**
+         * Splits a Region into four new Regions with random
+         * horizontal and vertical dividers.
+         * 
+         * @param rand the seeded Random object to use
+         * 
+         * @return the fixed Region[4] array of new Region objects.
+         */
         public Region[] splitQuadrants(Random rand) {
             int midX = chooseRandomVerticalDivider(rand);
             int midY = chooseRandomHorizontalDivider(rand);
@@ -110,31 +169,71 @@ public class Mondrian {
                     new Region(new Point(midX, midY), botRight) };
         }
 
-        private int chooseRandomHorizontalDivider(Random rand) {
-            return chooseRandomSubregion(topLeft.y, botRight.y, rand);
-        }
-
-        private int chooseRandomVerticalDivider(Random rand) {
-            return chooseRandomSubregion(topLeft.x, botRight.x, rand);
-        }
-
         /**
+         * Chooses a random middle int between the horizontal extremes of the Region.
+         * 
+         * @param rand the seeded Random object to use
+         *
+         * @return the middle int between the horizontal extremes.
+         * 
+         * @see #chooseRandomDivider(int, int, Random)
          */
-        public int chooseRandomSubregion(int min, int max, Random rand) {
-            // + 1 to consider inclusive max
-            return rand.nextInt(min + SPLIT_BUFFER, max - SPLIT_BUFFER + 1);
+        private int chooseRandomHorizontalDivider(Random rand) {
+            return chooseRandomDivider(topLeft.y, botRight.y, rand);
         }
 
         /**
+         * Chooses a random middle int between the vertical extremes of the Region.
+         * 
+         * @param rand the seeded Random object to use
+         *
+         * @return the middle int between the vertical extremes.
+         * 
+         * @see #chooseRandomDivider(int, int, Random)
+         */
+        private int chooseRandomVerticalDivider(Random rand) {
+            return chooseRandomDivider(topLeft.x, botRight.x, rand);
+        }
+
+        /**
+         * Returns an random int within the buffered range of a minimum and maximum
+         * inclusive, ensuring that the division has MIN_CELL_SIZE units
+         * between both the minimum and maximum.
+         *
+         * @param min  the minimum int
+         * @param max  the maximum int
+         * @param rand the seeded Random object to use
+         * 
+         * @return the randomized and appropriately spaced int
+         *         buffered between min and max.
+         */
+        private int chooseRandomDivider(int min, int max, Random rand) {
+            // + 1 to consider inclusive max
+            return rand.nextInt(min + MIN_CELL_SIZE, max - MIN_CELL_SIZE + 1);
+        }
+
+        /**
+         * Determines whether the current region height is
+         * smaller than one quarter of the total height.
+         *
+         * @return whether the region is smaller,
+         *         {@code true} if smaller and
+         *         {@code false} if larger.
          */
         public boolean isQuarterHeight() {
-            return botRight.y - topLeft.y < height;
+            return botRight.y - topLeft.y < height / 4;
         }
 
         /**
+         * Determines whether the current region width is
+         * smaller than one quarter of the total width.
+         *
+         * @return whether the region is smaller,
+         *         {@code true} if smaller and
+         *         {@code false} if larger.
          */
         public boolean isQuarterWidth() {
-            return botRight.x - topLeft.x < width;
+            return botRight.x - topLeft.x < width / 4;
         }
 
         /**

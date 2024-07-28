@@ -19,10 +19,16 @@ public class Client {
             System.out.print("Enter 1 for a basic Mondrian or 2 for a complex Mondrian: ");
             choice = console.nextInt();
         }
+
         System.out.print("Enter image width (>= 300px): ");
         int width = console.nextInt();
         System.out.print("Enter image height (>= 300px): ");
         int height = console.nextInt();
+
+        if (width < 300 || height < 300) {
+            console.close();
+            throw new IllegalArgumentException("Image size too small.");
+        }
 
         Mondrian mond = new Mondrian();
         Picture pic = new Picture(width, height);
