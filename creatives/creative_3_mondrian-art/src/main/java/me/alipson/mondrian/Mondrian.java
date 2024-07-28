@@ -19,37 +19,43 @@ public class Mondrian {
     private static final int SPLIT_BUFFER = 10;
 
     /**
+     * Factory method for starting a new Mondrian art.
+     *
+     * @param pixels the Color[][] pixels on which create the Mondrian art.
      */
-    public void paintBasicMondrian(Color[][] pixels) {
+    public void Of(Color[][] pixels) {
         this.height = pixels.length;
         this.width = pixels[0].length;
         this.pixels = pixels;
+    }
 
-        basicHelper(
-                new Region(new Point(0, width), new Point(0, height)),
-                new Random());
+    /**
+     */
+    public void paintBasicMondrian(Color[][] pixels) {
+        Of(pixels);
+        basicHelper(new Region(new Point(0, width), new Point(0, height)), new Random());
     }
 
     /**
      */
     private void basicHelper(Region region, Random rand) {
+
+        Region[] newRegions = null;
+
         if (region.isQuarterWidth() && region.isQuarterHeight()) { // fill cell
             region.fill(randomBasicColor(rand));
         } else if (region.isQuarterWidth()) { // divide horizontally
-            Region.RegionPair newRegions = region.splitHorizontal(rand);
-            basicHelper(newRegions.first, rand);
-            basicHelper(newRegions.second, rand);
+            newRegions = region.splitHorizontal(rand);
         } else if (region.isQuarterHeight()) { // divide vertically
-            Region.RegionPair newRegions = region.splitVertical(rand);
-            basicHelper(newRegions.first, rand);
-            basicHelper(newRegions.second, rand);
+            newRegions = region.splitVertical(rand);
         } else { // divide horizontally and vertically
-            Region.RegionQuad newRegions = region.splitQuadrants(rand);
-            basicHelper(newRegions.topLeft, rand);
-            basicHelper(newRegions.topRight, rand);
-            basicHelper(newRegions.botLeft, rand);
-            basicHelper(newRegions.botRight, rand);
+            newRegions = region.splitQuadrants(rand);
         }
+
+        // NOTE: is this syntactic sugar acceptable?
+        if (newRegions != null)
+            for (Region r : newRegions)
+                basicHelper(r, rand);
     }
 
     /**
@@ -80,28 +86,28 @@ public class Mondrian {
         }
 
         // FIX: way to not create so many new objects?
-        public RegionPair splitHorizontal(Random rand) {
+        public Region[] splitHorizontal(Random rand) {
             int midY = chooseRandomHorizontalDivider(rand);
-            return new RegionPair(
+            return new Region[] {
                     new Region(topLeft, new Point(botRight.x, midY)),
-                    new Region(new Point(topLeft.x, midY), botRight));
+                    new Region(new Point(topLeft.x, midY), botRight) };
         }
 
-        public RegionPair splitVertical(Random rand) {
+        public Region[] splitVertical(Random rand) {
             int midX = chooseRandomVerticalDivider(rand);
-            return new RegionPair(
+            return new Region[] {
                     new Region(topLeft, new Point(midX, botRight.y)),
-                    new Region(new Point(midX, topLeft.y), botRight));
+                    new Region(new Point(midX, topLeft.y), botRight) };
         }
 
-        public RegionQuad splitQuadrants(Random rand) {
+        public Region[] splitQuadrants(Random rand) {
             int midX = chooseRandomVerticalDivider(rand);
             int midY = chooseRandomHorizontalDivider(rand);
-            return new RegionQuad(
+            return new Region[] {
                     new Region(topLeft, new Point(midX, midY)),
                     new Region(new Point(midX, topLeft.y), new Point(botRight.x, midY)),
                     new Region(new Point(topLeft.x, midY), new Point(midX, botRight.y)),
-                    new Region(new Point(midX, midY), botRight));
+                    new Region(new Point(midX, midY), botRight) };
         }
 
         private int chooseRandomHorizontalDivider(Random rand) {
@@ -118,12 +124,6 @@ public class Mondrian {
             // + 1 to consider inclusive max
             return rand.nextInt(min + SPLIT_BUFFER, max - SPLIT_BUFFER + 1);
         }
-
-        /**
-         */
-        // public boolean isMinimalCell() {
-        // return isQuarterWidth() && isQuarterHeight();
-        // }
 
         /**
          */
@@ -149,30 +149,6 @@ public class Mondrian {
                 for (int x = topLeft.x + 1; x < botRight.x - 1; x++) {
                     pixels[y][x] = color;
                 }
-            }
-        }
-
-        class RegionPair {
-            public Region first;
-            public Region second;
-
-            public RegionPair(Region first, Region second) {
-                this.first = first;
-                this.second = second;
-            }
-        }
-
-        class RegionQuad {
-            public Region topLeft;
-            public Region topRight;
-            public Region botLeft;
-            public Region botRight;
-
-            public RegionQuad(Region topLeft, Region topRight, Region botLeft, Region botRight) {
-                this.topLeft = topLeft;
-                this.topRight = topRight;
-                this.botLeft = botLeft;
-                this.botRight = botRight;
             }
         }
     }
