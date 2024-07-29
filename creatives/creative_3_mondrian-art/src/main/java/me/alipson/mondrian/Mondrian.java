@@ -54,7 +54,6 @@ public class Mondrian {
      * @param rand   the seeded Random object to use
      */
     private void basicHelper(Region region, Random rand) {
-
         Region[] newRegions = null;
 
         if (region.isQuarterWidth() && region.isQuarterHeight()) { // fill cell
@@ -67,7 +66,7 @@ public class Mondrian {
             newRegions = region.splitQuadrants(rand);
         }
 
-        // NOTE: is this syntactic sugar acceptable?
+        // NOTE: is this syntax sugar acceptable?
         if (newRegions != null)
             for (Region r : newRegions)
                 basicHelper(r, rand);
@@ -82,10 +81,25 @@ public class Mondrian {
     }
 
     /**
-     * Relates color to location
+     * Relates color to location and makes multiple splits
      */
     private void complexHelper(Region region, Random rand) {
+        Region[] newRegions = null;
 
+        if (region.isQuarterWidth() && region.isQuarterHeight()) { // fill cell
+            region.fill(randomBasicColor(rand));
+        } else if (region.isQuarterWidth()) { // divide horizontally
+            newRegions = region.splitMultipleHorizontal(rand);
+        } else if (region.isQuarterHeight()) { // divide vertically
+            newRegions = region.splitMultipleVertical(rand);
+        } else { // divide horizontally and vertically
+            newRegions = region.splitMultipleQuadrants(rand);
+        }
+
+        // NOTE: is this syntax sugar acceptable?
+        if (newRegions != null)
+            for (Region r : newRegions)
+                complexHelper(r, rand);
     }
 
     /**
@@ -159,6 +173,23 @@ public class Mondrian {
                     new Region(new Point(midX, topLeft.y), botRight) };
         }
 
+        public Region[] splitMultipleVertical(Random rand) {
+            int[] xs = chooseRandomDividers(topLeft.x, botRight.x, rand);
+            Region[] regions = new Region[xs.length + 1];
+            Point currTopLeft = topLeft;
+
+            for (int i = 0; i < regions.length; i++) {
+                if (i + 1 == regions.length) {
+                    regions[i].botRight = botRight;
+                } else {
+                    regions[i].botRight = new Point(xs[i], botRight.y);
+                }
+                regions[i].topLeft = currTopLeft;
+                currTopLeft = new Point(xs[i], topLeft.y);
+            }
+            return regions;
+        }
+
         /**
          * Splits a Region into four new Regions with random
          * horizontal and vertical dividers.
@@ -213,7 +244,7 @@ public class Mondrian {
          * @param rand the seeded Random object to use
          * 
          * @return the randomized and appropriately spaced int
-         *         buffered between min and max.
+         *         between min and max.
          */
         private int chooseRandomDivider(int min, int max, Random rand)
                 throws IllegalArgumentException {
@@ -228,14 +259,28 @@ public class Mondrian {
             return rand.nextInt(min + MIN_CELL_SIZE, max - MIN_CELL_SIZE + 1);
         }
 
-        public int[] chooseRandomDividers(int min, int max, Random rand) {
+        /**
+         * Provides a sorted int[] list of up to MAX_SUB_CELLS buffered dividers,
+         * leaving a minimum of MIN_CELL_SIZE between each divider and endpoints.
+         *
+         * @param min  the minimum int
+         * @param max  the maximum int
+         * @param rand the seeded Random object to use
+         * 
+         * @return the randomized, ordered, and appropriately spaced int[] list between
+         *         min and max.
+         */
+        private int[] chooseRandomDividers(int min, int max, Random rand) {
             // limit divider count to ensure each cell is at least MIN_CELL_SIZE
             int maxDividers = (max - min) / (2 * MIN_CELL_SIZE);
             int dividerCount = Math.min(maxDividers, MAX_SUB_CELLS);
             int[] dividers = new int[dividerCount];
 
             for (int i = 0; i < dividerCount; i++) {
-                dividers[i] = chooseRandomDivider(min, max - (dividerCount - (i + 1)) * MIN_CELL_SIZE, rand);
+                // ensure that the remaining space is sufficient to evenly space out remaining
+                // dividers
+                dividers[i] = chooseRandomDivider(
+                        min, max - (dividerCount - (i + 1)) * MIN_CELL_SIZE, rand);
                 min = dividers[i];
             }
 
