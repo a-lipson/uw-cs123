@@ -119,6 +119,25 @@ public class Mondrian {
         return dummyRegion.chooseRandomDividers(min, max, new Random());
     }
 
+    // NOTE: could have included right-hand extreme bound in #chooseRandomDividers
+    private int[] appendToIntList(int[] xs, int x) {
+        int[] out = new int[xs.length + 1];
+        for (int i = 0; i < xs.length; i++)
+            out[i] = xs[i];
+        out[xs.length] = x;
+        return out;
+    }
+
+    private Region[] flattenRegionMatrix2(Region[][] m) {
+        // wish that we could create generic arrays
+        Region[] out = new Region[m[0].length * m.length];
+        int i = 0;
+        for (Region[] row : m)
+            for (Region r : row)
+                out[i++] = r;
+        return out;
+    }
+
     /**
      * Region wraps a 2D Color matrix array of Color[][] in addition to
      * two Point points which form a region of operation for a Picture object's
@@ -173,20 +192,31 @@ public class Mondrian {
                     new Region(new Point(midX, topLeft.y), botRight) };
         }
 
-        public Region[] splitMultipleVertical(Random rand) {
-            int[] xs = chooseRandomDividers(topLeft.x, botRight.x, rand);
-            Region[] regions = new Region[xs.length + 1];
+        public Region[] splitMultipleHorizontal(Random rand) {
+            int[] ys = appendToIntList(
+                    chooseRandomDividers(topLeft.y, botRight.y, rand), botRight.y);
+            Region[] regions = new Region[ys.length];
             Point currTopLeft = topLeft;
 
             for (int i = 0; i < regions.length; i++) {
-                if (i + 1 == regions.length) {
-                    regions[i].botRight = botRight;
-                } else {
-                    regions[i].botRight = new Point(xs[i], botRight.y);
-                }
-                regions[i].topLeft = currTopLeft;
+                regions[i] = new Region(currTopLeft, new Point(botRight.x, ys[i]));
+                currTopLeft = new Point(topLeft.x, ys[i]);
+            }
+
+            return regions;
+        }
+
+        public Region[] splitMultipleVertical(Random rand) {
+            int[] xs = appendToIntList(
+                    chooseRandomDividers(topLeft.x, botRight.x, rand), botRight.x);
+            Region[] regions = new Region[xs.length];
+            Point currTopLeft = topLeft;
+
+            for (int i = 0; i < regions.length; i++) {
+                regions[i] = new Region(currTopLeft, new Point(xs[i], botRight.y));
                 currTopLeft = new Point(xs[i], topLeft.y);
             }
+
             return regions;
         }
 
@@ -206,6 +236,24 @@ public class Mondrian {
                     new Region(new Point(midX, topLeft.y), new Point(botRight.x, midY)),
                     new Region(new Point(topLeft.x, midY), new Point(midX, botRight.y)),
                     new Region(new Point(midX, midY), botRight) };
+        }
+
+        public Region[] splitMultipleQuadrants(Random rand) {
+            int[] xs = appendToIntList(chooseRandomDividers(topLeft.x, botRight.x, rand), botRight.x);
+            int[] ys = appendToIntList(chooseRandomDividers(topLeft.y, botRight.y, rand), botRight.y);
+            Region[][] regions = new Region[ys.length][xs.length];
+
+            Point currTopLeft = topLeft;
+
+            for (int i = 0; i < xs.length; i++) {
+                for (int j = 0; j < ys.length; j++) {
+                    regions[j][i] = new Region(currTopLeft, new Point(xs[i], ys[j]));
+                    currTopLeft = new Point(currTopLeft.x, ys[j]);
+                }
+                currTopLeft = new Point(xs[i], topLeft.y);
+            }
+
+            return flattenRegionMatrix2(regions);
         }
 
         /**
@@ -252,7 +300,7 @@ public class Mondrian {
             // dimensions, 75, being at least MIN_CELL_SIZE.
             if (min + MIN_CELL_SIZE > max - MIN_CELL_SIZE + 1)
                 throw new IllegalArgumentException(String.format(
-                        "Range insufficient size to two cells: %d, %d of hold MIN_CELL_SIZE %d.",
+                        "Range insufficient of two cells: %d, %d to hold MIN_CELL_SIZE %d.",
                         min, max, MIN_CELL_SIZE));
 
             // + 1 to consider inclusive max
