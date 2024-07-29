@@ -17,6 +17,7 @@ public class Mondrian {
 
     private static final Color[] COLORS = { Color.RED, Color.YELLOW, Color.CYAN, Color.WHITE };
     private static final int MIN_CELL_SIZE = 10;
+    private static final int MAX_SUB_CELLS = 4;
 
     /**
      * Factory method for starting a new Mondrian art by initializing
@@ -81,7 +82,8 @@ public class Mondrian {
     }
 
     /**
-    */
+     * Relates color to location
+     */
     private void complexHelper(Region region, Random rand) {
 
     }
@@ -95,6 +97,12 @@ public class Mondrian {
      */
     private Color randomBasicColor(Random rand) {
         return COLORS[rand.nextInt(COLORS.length)];
+    }
+
+    public int[] testChooseRandomDividers(int min, int max) {
+        Point dummyPoint = new Point(0, 0);
+        Region dummyRegion = new Region(dummyPoint, dummyPoint);
+        return dummyRegion.chooseRandomDividers(min, max, new Random());
     }
 
     /**
@@ -207,9 +215,51 @@ public class Mondrian {
          * @return the randomized and appropriately spaced int
          *         buffered between min and max.
          */
-        private int chooseRandomDivider(int min, int max, Random rand) {
+        private int chooseRandomDivider(int min, int max, Random rand)
+                throws IllegalArgumentException {
+            // NOTE: this method is contingent on one quarter of the minimum picture
+            // dimensions, 75, being at least MIN_CELL_SIZE.
+            if (min + MIN_CELL_SIZE > max - MIN_CELL_SIZE + 1)
+                throw new IllegalArgumentException(String.format(
+                        "Range insufficient size to two cells: %d, %d of hold MIN_CELL_SIZE %d.",
+                        min, max, MIN_CELL_SIZE));
+
             // + 1 to consider inclusive max
             return rand.nextInt(min + MIN_CELL_SIZE, max - MIN_CELL_SIZE + 1);
+        }
+
+        public int[] chooseRandomDividers(int min, int max, Random rand) {
+            // limit divider count to ensure each cell is at least MIN_CELL_SIZE
+            int maxDividers = (max - min) / (2 * MIN_CELL_SIZE);
+            int dividerCount = Math.min(maxDividers, MAX_SUB_CELLS);
+            int[] dividers = new int[dividerCount];
+            // int validDividers = 0;
+            System.out.printf("trying to divide %d thru %d, %d times\n", min, max, dividerCount);
+
+            for (int i = 0; i < dividerCount; i++) {
+                System.out.println("min: " + min + " max: " + max);
+                dividers[i] = chooseRandomDivider(min, max - (dividerCount - (i + 1)) * MIN_CELL_SIZE, rand);
+                min = dividers[i];
+            }
+
+            // naive approach
+            // while (validDividers < dividerCount) {
+            // boolean valid = false;
+            // while (!valid) {
+            //
+            // int dividerCandidate = rand.nextInt(min + MIN_CELL_SIZE, max - MIN_CELL_SIZE
+            // + 1);
+            // for (int i = 0; i < validDividers; i++) {
+            // if (Math.abs(dividers[i] - dividerCandidate) > MIN_CELL_SIZE) {
+            // // add dividerCandidate to dividers
+            // }
+            // valid = true;
+            // }
+            // }
+            // validDividers++;
+            // }
+
+            return dividers;
         }
 
         /**
