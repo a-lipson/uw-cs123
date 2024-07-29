@@ -15,6 +15,9 @@ public class Mondrian {
 
     private Color[][] pixels;
 
+    private Point origin;
+    private Point center;
+
     private static final Color[] COLORS = { Color.RED, Color.YELLOW, Color.CYAN, Color.WHITE };
     private static final int MIN_CELL_SIZE = 10;
     private static final int MAX_SUB_CELLS = 4;
@@ -29,6 +32,8 @@ public class Mondrian {
         this.height = pixels.length;
         this.width = pixels[0].length;
         this.pixels = pixels;
+        this.origin = new Point(0, 0);
+        this.center = new Point(width / 2, height / 2);
     }
 
     /**
@@ -87,7 +92,7 @@ public class Mondrian {
         Region[] newRegions = null;
 
         if (region.isQuarterWidth() && region.isQuarterHeight()) { // fill cell
-            region.fill(randomBasicColor(rand));
+            region.fill(region.getWeightedColor(rand));
         } else if (region.isQuarterWidth()) { // divide horizontally
             newRegions = region.splitMultipleHorizontal(rand);
         } else if (region.isQuarterHeight()) { // divide vertically
@@ -96,7 +101,6 @@ public class Mondrian {
             newRegions = region.splitMultipleQuadrants(rand);
         }
 
-        // NOTE: is this syntax sugar acceptable?
         if (newRegions != null)
             for (Region r : newRegions)
                 complexHelper(r, rand);
@@ -111,12 +115,6 @@ public class Mondrian {
      */
     private Color randomBasicColor(Random rand) {
         return COLORS[rand.nextInt(COLORS.length)];
-    }
-
-    public int[] testChooseRandomDividers(int min, int max) {
-        Point dummyPoint = new Point(0, 0);
-        Region dummyRegion = new Region(dummyPoint, dummyPoint);
-        return dummyRegion.chooseRandomDividers(min, max, new Random());
     }
 
     // NOTE: could have included right-hand extreme bound in #chooseRandomDividers
@@ -161,6 +159,8 @@ public class Mondrian {
         }
 
         // FIX: way to not create so many new objects?
+        // NOTE: fairly sure that the assignment was most concerned with creating excess
+        // Random objects...
 
         /**
          * Splits a Region into two new Regions with a random
@@ -335,6 +335,38 @@ public class Mondrian {
             return dividers;
         }
 
+        public Color getWeightedColor(Random rand) {
+            Point regionCenter = regionCenter();
+            double halfDiagonalLength = origin.distance(center);
+
+            // distance from center determines minimum possible brightness
+            float brightness = rand.nextFloat((float) (regionCenter.distance(center) / halfDiagonalLength), 1);
+
+            double cosAngle = dot(center, regionCenter) / (halfDiagonalLength * regionCenter.distance(origin));
+            // clamp angle to fix floating point error
+            cosAngle = Math.max(-1.0, Math.min(1.0, cosAngle));
+
+            double fromOriginFacingAngle = Math.acos(cosAngle) / Math.PI;
+
+            final float HUE_RANGE = 0.3f;
+            // compute angle from center to origin vector using dot product.
+            // angle against center and origin determines hue within a fixed range of
+            // HUE_RANGE.
+            float hue = rand.nextFloat((float) fromOriginFacingAngle - HUE_RANGE,
+                    (float) fromOriginFacingAngle + HUE_RANGE);
+
+            hue = (float) fromOriginFacingAngle;
+            System.out.println(hue);
+
+            return Color.getHSBColor(Math.min(hue, 1), 1, brightness);
+        }
+
+        // Point utility methods
+
+        private double dot(Point a, Point b) {
+            return a.x * b.x + a.y * b.y;
+        }
+
         /**
          * Determines whether the current region height is
          * smaller than one quarter of the total height.
@@ -357,6 +389,10 @@ public class Mondrian {
          */
         public boolean isQuarterWidth() {
             return botRight.x - topLeft.x < width / 4;
+        }
+
+        private Point regionCenter() {
+            return new Point((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2);
         }
 
         /**
