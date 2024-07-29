@@ -14,28 +14,6 @@ public class Client {
         Scanner console = new Scanner(System.in);
         System.out.println("Welcome to the CSE 123 Mondrian Art Generator!");
 
-        int count = 0;
-        int smallestGap = 10;
-        int largestGap = 0;
-        Mondrian m = new Mondrian();
-        for (int t = 0; t < 100; t++) {
-
-            int[] dividers = m.testChooseRandomDividers(0, 300 / 4);
-
-            for (int i = 0; i < dividers.length - 1; i++) {
-                int gap = dividers[i + 1] - dividers[i];
-                if (gap >= 10)
-                    count++;
-                if (gap < smallestGap)
-                    smallestGap = gap;
-                if (gap > largestGap)
-                    largestGap = gap;
-            }
-        }
-        System.out.println(count);
-        System.out.println(smallestGap);
-        System.out.println(largestGap);
-
         int choice = 0;
         while (choice != 1 && choice != 2) {
             System.out.print("Enter 1 for a basic Mondrian or 2 for a complex Mondrian: ");

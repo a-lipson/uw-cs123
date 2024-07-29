@@ -233,31 +233,11 @@ public class Mondrian {
             int maxDividers = (max - min) / (2 * MIN_CELL_SIZE);
             int dividerCount = Math.min(maxDividers, MAX_SUB_CELLS);
             int[] dividers = new int[dividerCount];
-            // int validDividers = 0;
-            System.out.printf("trying to divide %d thru %d, %d times\n", min, max, dividerCount);
 
             for (int i = 0; i < dividerCount; i++) {
-                System.out.println("min: " + min + " max: " + max);
                 dividers[i] = chooseRandomDivider(min, max - (dividerCount - (i + 1)) * MIN_CELL_SIZE, rand);
                 min = dividers[i];
             }
-
-            // naive approach
-            // while (validDividers < dividerCount) {
-            // boolean valid = false;
-            // while (!valid) {
-            //
-            // int dividerCandidate = rand.nextInt(min + MIN_CELL_SIZE, max - MIN_CELL_SIZE
-            // + 1);
-            // for (int i = 0; i < validDividers; i++) {
-            // if (Math.abs(dividers[i] - dividerCandidate) > MIN_CELL_SIZE) {
-            // // add dividerCandidate to dividers
-            // }
-            // valid = true;
-            // }
-            // }
-            // validDividers++;
-            // }
 
             return dividers;
         }
