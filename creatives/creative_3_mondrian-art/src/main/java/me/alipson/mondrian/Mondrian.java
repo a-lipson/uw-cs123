@@ -342,7 +342,9 @@ public class Mondrian {
             // distance from center determines minimum possible brightness
             float brightness = rand.nextFloat((float) (regionCenter.distance(center) / halfDiagonalLength), 1);
 
-            double cosAngle = dot(center, regionCenter) / (halfDiagonalLength * regionCenter.distance(origin));
+            Point centerToOrigin = new Point(-center.x, -center.y);
+            // centerToOrigin length is the same as half diagonal length
+            double cosAngle = dot(centerToOrigin, regionCenter) / (halfDiagonalLength * regionCenter.distance(origin));
             // clamp angle to fix floating point error
             cosAngle = Math.max(-1.0, Math.min(1.0, cosAngle));
 
