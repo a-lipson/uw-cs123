@@ -136,6 +136,8 @@ public class Repository {
 
         while (curr != null && fromLatest < n) {
             out += curr.toString() + "\n";
+            fromLatest++;
+            curr = curr.past;
         }
         return out;
     }
