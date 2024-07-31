@@ -9,6 +9,14 @@ import java.awt.*;
 // C3: Mondrian Art
 // TA: Daniel
 
+/**
+ * Mondrian generates two different types of immitation artwork similar to Piet
+ * Mondrian's style.
+ * The class works with Color[][] pixel matrices from the Picture class.
+ * 
+ * @see #paintBasicMondrian(Color[][]) the basic Mondrian painting method
+ * @see #paintComplexMondrian(Color[][]) the complex Mondrain paiting method
+ */
 public class Mondrian {
     private int height;
     private int width;
@@ -78,6 +86,13 @@ public class Mondrian {
     }
 
     /**
+     * Paints a Mondrian painting with many cell divisions,
+     * mean brightness decreasing with proxmity to center,
+     * and possible hue range shifting by angle of the cell with respect to the top
+     * left corner.
+     * 
+     * @param pixels the input Color[][] pixels to modify
+     * 
      * @see #complexHelper(Region, Random)
      */
     public void paintComplexMondrian(Color[][] pixels) {
@@ -86,7 +101,17 @@ public class Mondrian {
     }
 
     /**
-     * Relates color to location and makes multiple splits
+     * Recursive helper method for complex Mondrian painter;
+     * recursively splits input up to MAX_SUB_CELLS times until region reaches
+     * minimal size as the base case, and fills the region according to a color
+     * weighting, which relates color to angular location and brightness to
+     * increased distance from center.
+     * 
+     * @param region the Region region to measure and either subdivide into more
+     *               regions if large enough, or paint if of a terminally small size
+     * @param rand   the seeded Random object to use
+     * 
+     * @see Region#getWeightedColor(Random)
      */
     private void complexHelper(Region region, Random rand) {
         Region[] newRegions = null;
@@ -117,6 +142,15 @@ public class Mondrian {
         return COLORS[rand.nextInt(COLORS.length)];
     }
 
+    /**
+     * Creates a new int[] array of one greater length, filling in the last position
+     * with a provided int value.
+     * 
+     * @param xs the original int[] array
+     * @param x  the x to append to the end
+     * 
+     * @return the modified new int[] array.
+     */
     // NOTE: could have included right-hand extreme bound in #chooseRandomDividers
     private int[] appendToIntList(int[] xs, int x) {
         int[] out = new int[xs.length + 1];
@@ -126,6 +160,14 @@ public class Mondrian {
         return out;
     }
 
+    /**
+     * Flattens a two dimnesional Region[][] matrix into a one dimensional list
+     * by concatenating subsequent Region[] arrays onto the first.
+     * 
+     * @param m the Region[][] matrix to flatten
+     * 
+     * @return the flattened one dimnesional Region[] array.
+     */
     private Region[] flattenRegionMatrix2(Region[][] m) {
         // wish that we could create generic arrays
         Region[] out = new Region[m[0].length * m.length];
@@ -161,6 +203,7 @@ public class Mondrian {
         // FIX: way to not create so many new objects?
         // NOTE: fairly sure that the assignment was most concerned with creating excess
         // Random objects...
+        // also,
 
         /**
          * Splits a Region into two new Regions with a random
@@ -168,7 +211,7 @@ public class Mondrian {
          * 
          * @param rand the seeded Random object to use
          * 
-         * @return the fixed Region[2] array of new Region objects.
+         * @return the Region[2] array of new Region objects.
          */
         public Region[] splitHorizontal(Random rand) {
             int midY = chooseRandomHorizontalDivider(rand);
@@ -183,7 +226,7 @@ public class Mondrian {
          * 
          * @param rand the seeded Random object to use
          * 
-         * @return the fixed Region[2] array of new Region objects.
+         * @return the Region[2] array of new Region objects.
          */
         public Region[] splitVertical(Random rand) {
             int midX = chooseRandomVerticalDivider(rand);
@@ -192,6 +235,14 @@ public class Mondrian {
                     new Region(new Point(midX, topLeft.y), botRight) };
         }
 
+        /**
+         * Splits a Region into up to MAX_SUB_CELLS new Regions with random
+         * horizontal dividers.
+         * 
+         * @param rand the seeded Random object to use
+         * 
+         * @return the Region[] array of new Region objects.
+         */
         public Region[] splitMultipleHorizontal(Random rand) {
             int[] ys = appendToIntList(
                     chooseRandomDividers(topLeft.y, botRight.y, rand), botRight.y);
@@ -206,6 +257,14 @@ public class Mondrian {
             return regions;
         }
 
+        /**
+         * Splits a Region into up to MAX_SUB_CELLS new Regions with random
+         * vertical dividers.
+         * 
+         * @param rand the seeded Random object to use
+         * 
+         * @return the Region[] array of new Region objects.
+         */
         public Region[] splitMultipleVertical(Random rand) {
             int[] xs = appendToIntList(
                     chooseRandomDividers(topLeft.x, botRight.x, rand), botRight.x);
@@ -238,6 +297,14 @@ public class Mondrian {
                     new Region(new Point(midX, midY), botRight) };
         }
 
+        /**
+         * Splits a Region into up to MAX_SUB_CELLS^2 new Regions with random
+         * horizontal and horizontal dividers.
+         * 
+         * @param rand the seeded Random object to use
+         * 
+         * @return the Region[] array of new Region objects.
+         */
         public Region[] splitMultipleQuadrants(Random rand) {
             int[] xs = appendToIntList(chooseRandomDividers(topLeft.x, botRight.x, rand), botRight.x);
             int[] ys = appendToIntList(chooseRandomDividers(topLeft.y, botRight.y, rand), botRight.y);
@@ -335,6 +402,11 @@ public class Mondrian {
             return dividers;
         }
 
+        /**
+         * 
+         * 
+         * @return Color the psuedo-randomized position-weighted Color color.
+         */
         public Color getWeightedColor(Random rand) {
             Point regionCenter = regionCenter();
             double halfDiagonalLength = origin.distance(center);
