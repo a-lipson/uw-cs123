@@ -9,8 +9,6 @@ package me.alipson.quiz;
 import java.io.*;
 import java.util.*;
 
-import com.sun.source.tree.Tree;
-
 /**
 */
 public class QuizTree {
@@ -23,52 +21,25 @@ public class QuizTree {
      *                  quiz
      */
     public QuizTree(Scanner inputFile) {
-        // QuizTreeNode curr, prev;
-        // while (inputFile.hasNextLine()) {
-        // String line = inputFile.nextLine();
-        // curr = parseQuizNodeOutput(line);
-        // // need prev null check, would occur on the first iter only
-        // if (prev)
-        // prev = curr;
-        // }
-        constructorHelper(null, inputFile);
-
-        inputFile.close();
+        this.root = constructorHelper(inputFile);
     }
 
     /**
      * interpret input file as preorder traversal
      */
-    private void constructorHelper(QuizTreeNode curr, Scanner inputFile) {
-
-        // TODO: finish this method! it's not quite done yet;
-        // can't traverse back upward and to the right!
-
-        if (inputFile.hasNextLine()) { // base case
-            String line = inputFile.nextLine();
-            QuizTreeNode next = parseQuizNodeOutput(line);
-
-            // on first pass through, we have no comparable parent node
-            if (curr == null)
-                constructorHelper(next, inputFile);
-
-            // assume that our input will not have more than
-            // two nodes per parent.
-            if (curr.left == null) {
-                curr.left = next;
-            } else if (curr.right == null) {
-                curr.right = next;
-            } else {
-                // should i put this here?
-                constructorHelper(curr, inputFile);
-            }
-
-            // set next as current root if not a result leaf node
-            if (!isResultNode(next))
-                curr = next;
-
-            constructorHelper(curr, inputFile);
+    private QuizTreeNode constructorHelper(Scanner inputFile) {
+        if (!inputFile.hasNextLine()) { // file fully read
+            inputFile.close();
+            return null;
         }
+
+        QuizTreeNode node = parseQuizNodeOutput(inputFile.nextLine());
+        if (!isResultNode(node)) { // not base case
+            node.left = constructorHelper(inputFile);
+            node.right = constructorHelper(inputFile);
+        }
+
+        return node;
     }
 
     /**
@@ -90,25 +61,37 @@ public class QuizTree {
     private void takeQuizHelper(QuizTreeNode node, Scanner console) {
         if (isResultNode(node)) { // base case
             System.out.println("Your result is: " + node.result);
+        } else {
+            System.out.printf("Do you prefer %s or %s?\n", node.leftChoice, node.rightChoice);
+            String input = console.nextLine();
+
+            // NOTE: here is a great place for a bifunctor!
+            if (input.equalsIgnoreCase(node.leftChoice)) {
+                node = node.left;
+            } else if (input.equalsIgnoreCase(node.rightChoice)) {
+                node = node.right;
+            } else {
+                System.out.println("\tInvalid response; try again.");
+            }
+
+            takeQuizHelper(node, console);
         }
-
-        System.out.printf("Do you prefer %s or %s?\n", node.leftChoice, node.rightChoice);
-        String input = console.nextLine();
-
-        // NOTE: here is a great place for a bifunctor!
-        if (input.equals(node.leftChoice)) {
-            takeQuizHelper(node.left, console);
-        } else if (input.equals(node.rightChoice)) {
-            takeQuizHelper(node.right, console);
-        }
-
-        System.out.println("\tInvalid response; try again.");
-        takeQuizHelper(node, console);
-
     }
 
+    /**
+     * Checks whether a QuizTreeNode node is a result leaf Node
+     * by assessing whether the result field is null.
+     * 
+     * @param node the QuizTreeNode node to check
+     * 
+     * @return if node is a result leaf, {@code true} if yes and {@code false}
+     *         otherwise.
+     */
     private static boolean isResultNode(QuizTreeNode node) {
-        return node.left == null && node.right == null;
+        if (node == null)
+            throw new IllegalArgumentException("Node cannot be null.");
+        // return node.left == null && node.right == null;
+        return node.result != null;
     }
 
     /**
@@ -134,7 +117,7 @@ public class QuizTree {
      * @see #parseQuizNodeOutput(String) the parser for this format
      */
     private static String formatQuizNodeOutput(QuizTreeNode node) {
-        return isResultNode(node) ? "END:" + node.result : node.left.result + "/" + node.right.result;
+        return isResultNode(node) ? "END:" + node.result : node.leftChoice + "/" + node.rightChoice;
     }
 
     /**
@@ -160,29 +143,27 @@ public class QuizTree {
      */
     public void addQuestion(String toReplace, String leftChoice, String rightChoice,
             String leftResult, String rightResult) {
-        // HACK: bypassing forbidden feature of Java 8 anonymous functions.
+        // HACK: bypassing forbidden feature of Java 8 anonymous functions/lambdas.
         map(new TreeOperation() {
             @Override
             public void apply(QuizTreeNode node) {
-                if (isResultNode(node) && node.result.equals(toReplace))
-                    node = new QuizTreeNode(null, leftChoice, rightChoice,
-                            new QuizTreeNode(leftResult), new QuizTreeNode(rightResult));
+                QuizTreeNode newNode = new QuizTreeNode(null, leftChoice, rightChoice,
+                        new QuizTreeNode(leftResult), new QuizTreeNode(rightResult));
+
+                if (resultMatch(node.left))
+                    node.left = newNode;
+
+                if (resultMatch(node.right))
+                    node.right = newNode;
+
+            }
+
+            private boolean resultMatch(QuizTreeNode node) {
+                return isResultNode(node) && node.result.equals(toReplace);
             }
         });
 
     }
-
-    // private boolean contains(String data) {
-    // return contains(root, data);
-    // }
-    //
-    // private boolean contains(QuizTreeNode node, String data) {
-    // if (node == null) {
-    // return false;
-    // }
-    // return node.result.equals(data) || contains(node.right, data) ||
-    // contains(node.left, data);
-    // }
 
     /**
      * The QuizTreeNode type represents a single node in the QuizTree;
@@ -199,11 +180,12 @@ public class QuizTree {
         public final String leftChoice, rightChoice;
 
         /**
-         * Constructs a general QuizTreenOde question leaf or branch
+         * Constructs a general QuizTreeNode question leaf or branch
          * with data and links.
          */
         public QuizTreeNode(String result, String leftChoice, String rightChoice,
                 QuizTreeNode left, QuizTreeNode right) {
+            // NOTE: result field is not used with branch nodes
             this.result = result;
             this.leftChoice = leftChoice;
             this.rightChoice = rightChoice;
