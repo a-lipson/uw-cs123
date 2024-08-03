@@ -155,11 +155,10 @@ public class QuizTree {
 
                 if (resultMatch(node.right))
                     node.right = newNode;
-
             }
 
             private boolean resultMatch(QuizTreeNode node) {
-                return isResultNode(node) && node.result.equals(toReplace);
+                return node != null && isResultNode(node) && node.result.equals(toReplace);
             }
         });
 
