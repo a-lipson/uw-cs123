@@ -160,6 +160,8 @@ public class QuizTree {
 
     }
 
+    /**
+    */
     private static final Lens<QuizTreeNode, QuizTreeNode> nodeLeftLens = new Lens<>() {
         @Override
         public QuizTreeNode get(QuizTreeNode node) {
@@ -173,6 +175,8 @@ public class QuizTree {
         }
     };
 
+    /**
+    */
     private static final Lens<QuizTreeNode, QuizTreeNode> nodeRightLens = new Lens<>() {
         @Override
         public QuizTreeNode get(QuizTreeNode node) {
@@ -185,6 +189,41 @@ public class QuizTree {
             return node;
         }
     };
+
+    /**
+     * Provides a higher order function application for the TreeOperation type
+     * through a preorder traversal.
+     * 
+     * @param operation a valid TreeOperation function to apply to a QuizTree
+     * 
+     * @see #map(QuizTreeNode, TreeOperation)
+     */
+    private void map(TreeOperation operation) {
+        map(root, operation);
+    }
+
+    /**
+     * Applies a TreeOperation type function through a preorder traversal of the
+     * tree nodes belonging to the given QuizTreeNode node.
+     * 
+     * @param node      the root QuizTreeNode node over which to traverse.
+     * @param operation a valid TreeOperation function to apply to the QuizTree
+     */
+    private void map(QuizTreeNode node, TreeOperation operation) {
+        if (node != null) {
+            operation.apply(node);
+            map(node.left, operation);
+            map(node.right, operation);
+        }
+    }
+
+    /**
+     * TreeOperation is a type for effectual functions that can be applied to
+     * QuizTreeNodes.
+     */
+    private interface TreeOperation {
+        void apply(QuizTreeNode node);
+    }
 
     /**
      * The QuizTreeNode type represents a single node in the QuizTree;
@@ -223,41 +262,6 @@ public class QuizTree {
             this(result, null, null, null, null);
         }
 
-    }
-
-    /**
-     * Provides a higher order function application for the TreeOperation type
-     * through a preorder traversal.
-     * 
-     * @param operation a valid TreeOperation function to apply to a QuizTree
-     * 
-     * @see #map(QuizTreeNode, TreeOperation)
-     */
-    private void map(TreeOperation operation) {
-        map(root, operation);
-    }
-
-    /**
-     * Applies a TreeOperation type function through a preorder traversal of the
-     * tree nodes belonging to the given QuizTreeNode node.
-     * 
-     * @param node      the root QuizTreeNode node over which to traverse.
-     * @param operation a valid TreeOperation function to apply to the QuizTree
-     */
-    private void map(QuizTreeNode node, TreeOperation operation) {
-        if (node != null) {
-            operation.apply(node);
-            map(node.left, operation);
-            map(node.right, operation);
-        }
-    }
-
-    /**
-     * TreeOperation is a type for effectual functions that can be applied to
-     * QuizTreeNodes.
-     */
-    private interface TreeOperation {
-        void apply(QuizTreeNode node);
     }
 
 }
