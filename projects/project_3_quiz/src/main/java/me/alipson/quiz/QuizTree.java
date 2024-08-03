@@ -150,26 +150,48 @@ public class QuizTree {
                 QuizTreeNode newNode = new QuizTreeNode(null, leftChoice, rightChoice,
                         new QuizTreeNode(leftResult), new QuizTreeNode(rightResult));
 
-                if (resultMatch(node.left))
-                    node.left = newNode;
-
-                if (resultMatch(node.right))
-                    node.right = newNode;
+                for (Lens<QuizTreeNode, QuizTreeNode> lens : new Lens[] {
+                        nodeLeftLens, nodeRightLens })
+                    if (node != null && isResultNode(node) && node.result.equals(toReplace))
+                        lens.set(node, newNode);
             }
 
-            private boolean resultMatch(QuizTreeNode node) {
-                return node != null && isResultNode(node) && node.result.equals(toReplace);
-            }
         });
 
     }
+
+    private static final Lens<QuizTreeNode, QuizTreeNode> nodeLeftLens = new Lens<>() {
+        @Override
+        public QuizTreeNode get(QuizTreeNode node) {
+            return node.left;
+        }
+
+        @Override
+        public QuizTreeNode set(QuizTreeNode node, QuizTreeNode newChild) {
+            node.left = newChild;
+            return node;
+        }
+    };
+
+    private static final Lens<QuizTreeNode, QuizTreeNode> nodeRightLens = new Lens<>() {
+        @Override
+        public QuizTreeNode get(QuizTreeNode node) {
+            return node.right;
+        }
+
+        @Override
+        public QuizTreeNode set(QuizTreeNode node, QuizTreeNode newChild) {
+            node.right = newChild;
+            return node;
+        }
+    };
 
     /**
      * The QuizTreeNode type represents a single node in the QuizTree;
      * the data class provides no methods beyond instance constructors.
      */
     private static class QuizTreeNode {
-        // NOTE: may not construct any methods which are not used by #quiztree!
+        // NOTE: may not construct any methods which are not used by #QuizTree!
         // structurally, i think it would be reasonable to have an #isleaf() method
         // for this class, and also a #tostring() override contingent upon the node
         // type.
