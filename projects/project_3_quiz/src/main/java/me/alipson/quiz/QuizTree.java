@@ -100,10 +100,11 @@ public class QuizTree {
      * @param outputFile the PrintStream file buffer on which to output the quiz.
      */
     public void export(PrintStream outputFile) {
-        map(new TreeOperation() {
+        map(new TreeConsumer<Void>() {
             @Override
-            public void apply(QuizTreeNode node) {
+            public Void apply(QuizTreeNode node) {
                 outputFile.println(formatQuizNodeOutput(node));
+                return null;
             }
         });
         outputFile.close();
@@ -144,20 +145,21 @@ public class QuizTree {
     public void addQuestion(String toReplace, String leftChoice, String rightChoice,
             String leftResult, String rightResult) {
         // HACK: bypassing forbidden feature of Java 8 anonymous functions/lambdas.
-        map(new TreeOperation() {
+        map(new TreeConsumer<Boolean>() {
             @Override
-            public void apply(QuizTreeNode node) {
+            public Boolean apply(QuizTreeNode node) {
                 QuizTreeNode newNode = new QuizTreeNode(null, leftChoice, rightChoice,
                         new QuizTreeNode(leftResult), new QuizTreeNode(rightResult));
-
                 for (Lens<QuizTreeNode, QuizTreeNode> lens : new Lens[] {
                         nodeLeftLens, nodeRightLens })
-                    if (node != null && isResultNode(node) && node.result.equals(toReplace))
+                    if (node != null && isResultNode(node) && node.result.equals(toReplace)) {
                         lens.set(node, newNode);
+                        return true;
+                    }
+
+                return false;
             }
-
         });
-
     }
 
     /**
@@ -196,9 +198,9 @@ public class QuizTree {
      * 
      * @param operation a valid TreeOperation function to apply to a QuizTree
      * 
-     * @see #map(QuizTreeNode, TreeOperation)
+     * @see #map(QuizTreeNode, TreeConsumer)
      */
-    private void map(TreeOperation operation) {
+    private void map(TreeConsumer<?> operation) {
         map(root, operation);
     }
 
@@ -209,11 +211,13 @@ public class QuizTree {
      * @param node      the root QuizTreeNode node over which to traverse.
      * @param operation a valid TreeOperation function to apply to the QuizTree
      */
-    private void map(QuizTreeNode node, TreeOperation operation) {
+    private void map(QuizTreeNode node, TreeConsumer<?> operation) {
         if (node != null) {
-            operation.apply(node);
-            map(node.left, operation);
-            map(node.right, operation);
+            Object result = operation.apply(node);
+            if (result instanceof Boolean && !(Boolean) result) {
+                map(node.left, operation);
+                map(node.right, operation);
+            }
         }
     }
 
@@ -221,8 +225,8 @@ public class QuizTree {
      * TreeOperation is a type for effectual functions that can be applied to
      * QuizTreeNodes.
      */
-    private interface TreeOperation {
-        void apply(QuizTreeNode node);
+    private interface TreeConsumer<T> {
+        T apply(QuizTreeNode node);
     }
 
     /**
