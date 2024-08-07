@@ -11,7 +11,7 @@ import java.util.*;
 
 /**
 */
-public class QuizTree {
+public class QuizTree2 {
     private QuizTreeNode root;
 
     /**
@@ -20,7 +20,7 @@ public class QuizTree {
      * @param inputFile the file input Scanner from which to create a new QuizTree
      *                  quiz
      */
-    public QuizTree(Scanner inputFile) {
+    public QuizTree2(Scanner inputFile) {
         this.root = constructorHelper(inputFile);
     }
 
@@ -100,16 +100,14 @@ public class QuizTree {
      * @param outputFile the PrintStream file buffer on which to output the quiz.
      */
     public void export(PrintStream outputFile) {
-        exportHelper(root, outputFile);
+        map(new TreeConsumer<Void>() {
+            @Override
+            public Void apply(QuizTreeNode node) {
+                outputFile.println(formatQuizNodeOutput(node));
+                return null;
+            }
+        });
         outputFile.close();
-    }
-
-    private void exportHelper(QuizTreeNode node, PrintStream outputFile) {
-        if (node != null) {
-            outputFile.println(formatQuizNodeOutput(node));
-            exportHelper(node.left, outputFile);
-            exportHelper(node.right, outputFile);
-        }
     }
 
     /**
@@ -146,30 +144,89 @@ public class QuizTree {
      */
     public void addQuestion(String toReplace, String leftChoice, String rightChoice,
             String leftResult, String rightResult) {
-        addQuestionHelper(root, toReplace, leftChoice, rightChoice, leftResult, rightResult);
+        // HACK: bypassing forbidden feature of Java 8 anonymous functions/lambdas.
+        map(new TreeConsumer<Boolean>() {
+            @Override
+            public Boolean apply(QuizTreeNode node) {
+                QuizTreeNode newNode = new QuizTreeNode(null, leftChoice, rightChoice,
+                        new QuizTreeNode(leftResult), new QuizTreeNode(rightResult));
+                for (Lens<QuizTreeNode, QuizTreeNode> lens : new Lens[] {
+                        nodeLeftLens, nodeRightLens })
+                    if (node != null && isResultNode(node) && node.result.equals(toReplace)) {
+                        lens.set(node, newNode);
+                        return true;
+                    }
 
+                return false;
+            }
+        });
     }
 
     /**
     */
-    private void addQuestionHelper(QuizTreeNode node, String toReplace,
-            String leftChoice, String rightChoice, String leftResult, String rightResult) {
+    private static final Lens<QuizTreeNode, QuizTreeNode> nodeLeftLens = new Lens<>() {
+        @Override
+        public QuizTreeNode get(QuizTreeNode node) {
+            return node.left;
+        }
+
+        @Override
+        public QuizTreeNode set(QuizTreeNode node, QuizTreeNode newChild) {
+            node.left = newChild;
+            return node;
+        }
+    };
+
+    /**
+    */
+    private static final Lens<QuizTreeNode, QuizTreeNode> nodeRightLens = new Lens<>() {
+        @Override
+        public QuizTreeNode get(QuizTreeNode node) {
+            return node.right;
+        }
+
+        @Override
+        public QuizTreeNode set(QuizTreeNode node, QuizTreeNode newChild) {
+            node.right = newChild;
+            return node;
+        }
+    };
+
+    /**
+     * Provides a higher order function application for the TreeOperation type
+     * through a preorder traversal.
+     * 
+     * @param operation a valid TreeOperation function to apply to a QuizTree
+     * 
+     * @see #map(QuizTreeNode, TreeConsumer)
+     */
+    private void map(TreeConsumer<?> operation) {
+        map(root, operation);
+    }
+
+    /**
+     * Applies a TreeOperation type function through a preorder traversal of the
+     * tree nodes belonging to the given QuizTreeNode node.
+     * 
+     * @param node      the root QuizTreeNode node over which to traverse.
+     * @param operation a valid TreeOperation function to apply to the QuizTree
+     */
+    private void map(QuizTreeNode node, TreeConsumer<?> operation) {
         if (node != null) {
-            QuizTreeNode[] children = new QuizTreeNode[] { node.left, node.right };
-            for (QuizTreeNode child : children) {
-                if (child != null && isResultNode(child) && child.result.equals(toReplace)) {
-                    QuizTreeNode newNode = new QuizTreeNode(null, leftChoice, rightChoice,
-                            new QuizTreeNode(leftResult), new QuizTreeNode(rightResult));
-                    if (child == node.right)
-                        node.right = newNode;
-                    if (child == node.left)
-                        node.left = newNode;
-                } else {
-                    addQuestionHelper(child,
-                            toReplace, leftChoice, rightChoice, leftResult, rightResult);
-                }
+            Object result = operation.apply(node);
+            if (result instanceof Boolean && !(Boolean) result) {
+                map(node.left, operation);
+                map(node.right, operation);
             }
         }
+    }
+
+    /**
+     * TreeOperation is a type for effectual functions that can be applied to
+     * QuizTreeNodes.
+     */
+    private interface TreeConsumer<T> {
+        T apply(QuizTreeNode node);
     }
 
     /**
