@@ -258,9 +258,9 @@ public class QuizTree2 {
         }
 
         /**
-         * Constructs a quiz question node
+         * Constructs a quiz result node.
          * 
-         * @param result the final QuizTreeNode text.
+         * @param result the final QuizTreeNode text
          */
         public QuizTreeNode(String result) {
             this(result, null, null, null, null);

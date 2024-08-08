@@ -10,7 +10,17 @@ import java.io.*;
 import java.util.*;
 
 /**
-*/
+ * QuizTree represents a quiz with binary choices that lead to answers.
+ * QuizTree is built from a file containing question options and answers.
+ * It has three main methods: takeQuiz, used to traverse the QuizTree by
+ * asking questions; addQuestion, used to replace a result node with a new
+ * question and pair of answers; and export, used to write the contents of
+ * the current, possibly modified, quiz to a file.
+ * 
+ * @see #takeQuiz(Scanner)
+ * @see #addQuestion(String, String, String, String, String)
+ * @see #export(PrintStream)
+ */
 public class QuizTree {
     private QuizTreeNode root;
 
@@ -25,7 +35,11 @@ public class QuizTree {
     }
 
     /**
-     * interpret input file as preorder traversal
+     * Interprets input file as a preorder traversal
+     * and constructs QuizTree's binary search tree from
+     * the root node.
+     * 
+     * @param inputFile
      */
     private QuizTreeNode constructorHelper(Scanner inputFile) {
         if (!inputFile.hasNextLine()) { // file fully read
@@ -53,10 +67,14 @@ public class QuizTree {
     }
 
     /**
-     * Helper method
+     * Recursive helper method for takeQuiz to parse nodes and progress
+     * on by user choice.
      *
-     * @param node
-     * @param console
+     * @param node    the QuizTreeNode node to parse as either a question or a
+     *                result
+     * @param console the Scanner user input
+     * 
+     * @see #takeQuiz(Scanner)
      */
     private void takeQuizHelper(QuizTreeNode node, Scanner console) {
         if (isResultNode(node)) { // base case
@@ -65,7 +83,6 @@ public class QuizTree {
             System.out.printf("Do you prefer %s or %s?\n", node.leftChoice, node.rightChoice);
             String input = console.nextLine();
 
-            // NOTE: here is a great place for a bifunctor!
             if (input.equalsIgnoreCase(node.leftChoice)) {
                 node = node.left;
             } else if (input.equalsIgnoreCase(node.rightChoice)) {
@@ -104,6 +121,15 @@ public class QuizTree {
         outputFile.close();
     }
 
+    /**
+     * Recursive helper method for export; prints the current node to the
+     * provided output file and uses preordering traversal for the rest of the tree.
+     * 
+     * @param node       the QuizTreeNode node to parse into a String line
+     * @param outputFile the PrintStream file to write to
+     * 
+     * @see #export(PrintStream)
+     */
     private void exportHelper(QuizTreeNode node, PrintStream outputFile) {
         if (node != null) {
             outputFile.println(formatQuizNodeOutput(node));
@@ -113,9 +139,12 @@ public class QuizTree {
     }
 
     /**
-     * Returns the document
+     * Returns the String text formatted version of a QuizTreeNode node for the
+     * output file.
      * 
-     * @param node the QuizTreeNode to format.
+     * @param node the QuizTreeNode to format
+     * 
+     * @return the formatted QuizTreeNode node String.
      * 
      * @see #parseQuizNodeOutput(String) the parser for this format
      */
@@ -143,25 +172,45 @@ public class QuizTree {
 
     /**
      * Replaces a result leaf QuizTreeNode with a new question and linked results.
+     * 
+     * @param toReplace   the result String to replace
+     * @param leftChoice  the new question's leftChoice field String
+     * @param rightChoice the new question's rightChoice field String
+     * @param leftResult  the new question's leftResult field String
+     * @param rightResult the new question's rightResult field String
      */
     public void addQuestion(String toReplace, String leftChoice, String rightChoice,
             String leftResult, String rightResult) {
         addQuestionHelper(root, toReplace, leftChoice, rightChoice, leftResult, rightResult);
-
     }
 
     /**
-    */
+     * Recursive helper method for addQuestion; traverses the QuizTree to match for
+     * a QuizTreeNode who has a result node child with a result field that matches
+     * toReplace.
+     * On a case-insensitive match, replaces the node with a new question node with
+     * a pair of answers.
+     * 
+     * @param node        the QuizTreeNode node to check
+     * @param toReplace   the result String to replace
+     * @param leftChoice  the new question's leftChoice field String
+     * @param rightChoice the new question's rightChoice field String
+     * @param leftResult  the new question's leftResult field String
+     * @param rightResult the new question's rightResult field String
+     */
     private void addQuestionHelper(QuizTreeNode node, String toReplace,
             String leftChoice, String rightChoice, String leftResult, String rightResult) {
         if (node != null) {
             QuizTreeNode[] children = new QuizTreeNode[] { node.left, node.right };
+
             for (QuizTreeNode child : children) {
                 if (child != null && isResultNode(child) && child.result.equals(toReplace)) {
                     QuizTreeNode newNode = new QuizTreeNode(null, leftChoice, rightChoice,
                             new QuizTreeNode(leftResult), new QuizTreeNode(rightResult));
+
                     if (child == node.right)
                         node.right = newNode;
+
                     if (child == node.left)
                         node.left = newNode;
                 } else {
@@ -201,14 +250,12 @@ public class QuizTree {
         }
 
         /**
-         * Constructs a quiz question node
+         * Constructs a quiz result node.
          * 
-         * @param result the final QuizTreeNode text.
+         * @param result the final QuizTreeNode text
          */
         public QuizTreeNode(String result) {
             this(result, null, null, null, null);
         }
-
     }
-
 }
