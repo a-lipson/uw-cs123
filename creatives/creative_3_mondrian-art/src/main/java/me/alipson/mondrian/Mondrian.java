@@ -2,7 +2,7 @@ package me.alipson.mondrian;
 
 import java.util.*;
 import java.awt.*;
-
+//
 // Alexandre Lipson
 // CSE 123
 // 07/31/24
@@ -297,8 +297,10 @@ public class Mondrian {
          * @return the Region[] array of new Region objects.
          */
         public Region[] splitMultipleQuadrants(Random rand) {
-            int[] xs = appendToIntList(chooseRandomDividers(topLeft.x, botRight.x, rand), botRight.x);
-            int[] ys = appendToIntList(chooseRandomDividers(topLeft.y, botRight.y, rand), botRight.y);
+            int[] xs = appendToIntList(chooseRandomDividers(topLeft.x, botRight.x, rand),
+                    botRight.x);
+            int[] ys = appendToIntList(chooseRandomDividers(topLeft.y, botRight.y, rand),
+                    botRight.y);
             Region[][] regions = new Region[ys.length][xs.length];
 
             Point currTopLeft = topLeft;
