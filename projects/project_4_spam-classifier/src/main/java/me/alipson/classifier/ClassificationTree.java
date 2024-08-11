@@ -24,7 +24,8 @@ public class ClassificationTree extends Classifier {
         if (data.size() != labels.size())
             throw new IllegalArgumentException("data list must be the same length as labels list.");
 
-        this.root = fromLists(root, data, labels);
+        for (int i = 0; i < data.size(); i++)
+            this.root = fromLists(this.root, data.get(i), labels.get(i));
     }
 
     /**
@@ -32,54 +33,39 @@ public class ClassificationTree extends Classifier {
      * 
      * @param node
      * @param data
-     * @param labels
+     * @param label
      * 
      * @return
      */
-    private ClassificationNode fromLists(ClassificationNode node, List<Classifiable> data, List<String> labels) {
-        if (data.isEmpty()) // end case
-            return null;
-
-        if (node == null) { // base case
-            ClassificationNode newNode = new ClassificationNode(labels.remove(0), null, data.remove(0));
-            return fromLists(newNode, data, labels);
-        }
+    private ClassificationNode fromLists(ClassificationNode node, Classifiable data, String label) {
+        if (node == null) // base case
+            return new ClassificationNode(label, null, data);
 
         if (!node.isLabel()) { // traverse until label node
-            if (node.getSplit().evaluate(data.get(0))) {
-                node.left = fromLists(node.left, data, labels);
-            } else {
-                node.right = fromLists(node.right, data, labels);
-            }
+            TreeLens sideLens = node.getSplit().evaluate(data)
+                    ? ClassificationNode.leftLens
+                    : ClassificationNode.rightLens;
+            sideLens.set(node, fromLists(sideLens.get(node), data, label));
             return node;
         }
 
-        String currLabel = labels.remove(0);
-        Classifiable currData = data.remove(0);
+        if (node.label.equals(label))
+            return node;
 
-        if (node.label.equals(currLabel))
-            return fromLists(node, data, labels);
-
-        Split split = currData.partition(node.data);
+        Split split = data.partition(node.data);
 
         ClassificationNode newNode = new ClassificationNode(split);
-        ClassificationNode newLabel = new ClassificationNode(currLabel, null, currData);
+        ClassificationNode newLabel = new ClassificationNode(label, null, data);
 
-        if (split.evaluate(currData)) {
-            newNode.left = newLabel;
-            newNode.right = node;
-        } else {
-            newNode.left = node;
-            newNode.right = newLabel;
-        }
+        boolean applyLeft = split.evaluate(data);
 
-        if (node.left.isLabel()) {
-            node.left = newNode;
-        } else {
-            node.right = newNode;
-        }
+        TreeLens setLeftLens = applyLeft ? ClassificationNode.leftLens : ClassificationNode.rightLens;
+        TreeLens setRightLens = applyLeft ? ClassificationNode.rightLens : ClassificationNode.leftLens;
 
-        return fromLists(newNode, data, labels);
+        setLeftLens.set(newNode, newLabel);
+        setRightLens.set(newNode, node);
+
+        return newNode;
     }
 
     /**
@@ -142,6 +128,8 @@ public class ClassificationTree extends Classifier {
     /**
     */
     public String classify(Classifiable input) {
+        if (!canClassify(input))
+            throw new IllegalArgumentException("cannot classify input.");
         return classifyHelper(root, input);
     }
 
@@ -187,9 +175,7 @@ public class ClassificationTree extends Classifier {
 
         public final String label;
         public final Split split;
-
-        // TODO: rename this field to something better
-        private final Classifiable data;
+        public final Classifiable data;
 
         /**
         */
@@ -223,9 +209,37 @@ public class ClassificationTree extends Classifier {
             return split;
         }
 
+        /**
+        */
         public <T> T map(boolean applyLeft, TreeOperation<T> operation) {
             return applyLeft ? operation.apply(left) : operation.apply(right);
         }
+
+        /**
+        */
+        public static TreeLens rightLens = new TreeLens() {
+            public ClassificationNode get(ClassificationNode node) {
+                return node.right;
+            }
+
+            public ClassificationNode set(ClassificationNode node, ClassificationNode newChild) {
+                node.right = newChild;
+                return node;
+            }
+        };
+
+        /**
+        */
+        public static TreeLens leftLens = new TreeLens() {
+            public ClassificationNode get(ClassificationNode node) {
+                return node.left;
+            }
+
+            public ClassificationNode set(ClassificationNode node, ClassificationNode newChild) {
+                node.left = newChild;
+                return node;
+            }
+        };
 
         /**
          * @see Split#toString()
@@ -238,5 +252,14 @@ public class ClassificationTree extends Classifier {
 
     private interface TreeOperation<T> {
         T apply(ClassificationNode node);
+    }
+
+    private interface TreeLens extends Lens<ClassificationNode, ClassificationNode> {
+    }
+
+    private interface Lens<S, A> {
+        A get(S s);
+
+        S set(S s, A a);
     }
 }
