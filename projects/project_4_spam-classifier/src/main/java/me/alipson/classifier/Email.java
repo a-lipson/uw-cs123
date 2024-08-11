@@ -1,9 +1,11 @@
+package me.alipson.classifier;
+
 import java.util.*;
 
 // This class represents an Email storing information about the percentage of words found within
 public class Email implements Classifiable {
     public static final Set<String> FEATURES = Set.of("wordPercent");
-    
+
     private Map<String, Integer> words;
     private double totalWords;
 
@@ -14,7 +16,7 @@ public class Email implements Classifiable {
     }
 
     // Helper method - parses the content from the provided content String,
-    //      populating the word -> count map and counting the total words/tokens
+    // populating the word -> count map and counting the total words/tokens
     private void parseContent(String content) {
         Scanner sc = new Scanner(content);
         while (sc.hasNext()) {
@@ -25,25 +27,27 @@ public class Email implements Classifiable {
             words.put(word, words.get(word) + 1);
             totalWords++;
         }
+        sc.close();
     }
 
-    // Returns the Set of all features present within an email that can be used in classification
+    // Returns the Set of all features present within an email that can be used in
+    // classification
     public Set<String> getFeatures() {
         return FEATURES;
     }
 
     // Returns the stored numeric value for the provided feature
     // Throws IllegalArgumentException
-    //      If provided feature is invalid, not contained within getFeatures()
+    // If provided feature is invalid, not contained within getFeatures()
     public double get(String feature) {
         String[] splitted = feature.split(Classifiable.SPLITTER);
 
         if (!FEATURES.contains(splitted[0])) {
             throw new IllegalArgumentException(
                     String.format("Invalid feature [%s], not within possible features [%s]",
-                                  feature, FEATURES.toString()));
+                            feature, FEATURES.toString()));
         }
-        
+
         if (splitted[0].equals("wordPercent")) {
             // Feature 1: wordPercent
             return getWordPercentage(splitted[1]);
@@ -51,15 +55,17 @@ public class Email implements Classifiable {
         return 0.0; // Mandatory return statement - should never reach
     }
 
-    // Helper method - calculates and returns the percentage occurance of the given word
+    // Helper method - calculates and returns the percentage occurance of the given
+    // word
     private double getWordPercentage(String word) {
         return totalWords == 0 ? 0.0 : this.words.getOrDefault(word, 0) / totalWords;
     }
 
-    // Returns a Split representing the midpoint in difference between this and the provided
-    //      provided other classifiable object
+    // Returns a Split representing the midpoint in difference between this and the
+    // provided
+    // provided other classifiable object
     // Throws IllegalArgumentException
-    //      If other isn't an instance of the Email class
+    // If other isn't an instance of the Email class
     public Split partition(Classifiable other) {
         if (!(other instanceof Email)) {
             throw new IllegalArgumentException("Provided 'other' not instance of Email.java");
@@ -84,7 +90,7 @@ public class Email implements Classifiable {
 
         // Calculate halfway between the two points
         double halfway = Split.midpoint(this.getWordPercentage(bestWord),
-                                        otherEmail.getWordPercentage(bestWord));
+                otherEmail.getWordPercentage(bestWord));
         return new Split("wordPercent" + Classifiable.SPLITTER + bestWord, halfway);
     }
 

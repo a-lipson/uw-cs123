@@ -9,8 +9,9 @@ package me.alipson.classifier;
 import java.util.*;
 import java.io.*;
 
+/**
+*/
 public class ClassificationTree extends Classifier {
-    // TODO: Implement these!
     private ClassificationNode root;
 
     /**
@@ -49,7 +50,7 @@ public class ClassificationTree extends Classifier {
             return node;
         }
 
-        if (node.label.equals(label))
+        if (node.label.equals(label)) // model is accurate
             return node;
 
         Split split = data.partition(node.data);
@@ -59,11 +60,11 @@ public class ClassificationTree extends Classifier {
 
         boolean applyLeft = split.evaluate(data);
 
-        TreeLens setLeftLens = applyLeft ? ClassificationNode.leftLens : ClassificationNode.rightLens;
-        TreeLens setRightLens = applyLeft ? ClassificationNode.rightLens : ClassificationNode.leftLens;
+        TreeLens newLens = applyLeft ? ClassificationNode.leftLens : ClassificationNode.rightLens;
+        TreeLens oldLens = applyLeft ? ClassificationNode.rightLens : ClassificationNode.leftLens;
 
-        setLeftLens.set(newNode, newLabel);
-        setRightLens.set(newNode, node);
+        newLens.set(newNode, newLabel);
+        oldLens.set(newNode, node);
 
         return newNode;
     }
@@ -117,7 +118,11 @@ public class ClassificationTree extends Classifier {
     }
 
     /**
-    */
+     * @param node
+     * @param features
+     * 
+     * @return
+     */
     private boolean canClassifyHelper(ClassificationNode node, Set<String> features) {
         return node == null || node.isLabel()
                 || (features.contains(node.getSplit().getFeature())
@@ -126,7 +131,10 @@ public class ClassificationTree extends Classifier {
     }
 
     /**
-    */
+     * @param input
+     * 
+     * @return
+     */
     public String classify(Classifiable input) {
         if (!canClassify(input))
             throw new IllegalArgumentException("cannot classify input.");
@@ -134,7 +142,11 @@ public class ClassificationTree extends Classifier {
     }
 
     /**
-    */
+     * @param node
+     * @param input
+     * 
+     * @return
+     */
     private String classifyHelper(ClassificationNode node, Classifiable input) {
         // return node.isLabel()
         // ? node.toString()
@@ -151,14 +163,17 @@ public class ClassificationTree extends Classifier {
     }
 
     /**
-    */
+     * @param ps
+     */
     public void save(PrintStream ps) {
         saveHelper(root, ps);
         ps.close();
     }
 
     /**
-    */
+     * @param node
+     * @param outputFile
+     */
     private void saveHelper(ClassificationNode node, PrintStream outputFile) {
         if (!(node == null)) {
             outputFile.println(node.toString());
@@ -209,11 +224,11 @@ public class ClassificationTree extends Classifier {
             return split;
         }
 
-        /**
-        */
-        public <T> T map(boolean applyLeft, TreeOperation<T> operation) {
-            return applyLeft ? operation.apply(left) : operation.apply(right);
-        }
+        // /**
+        // */
+        // public <T> T map(boolean applyLeft, TreeOperation<T> operation) {
+        // return applyLeft ? operation.apply(left) : operation.apply(right);
+        // }
 
         /**
         */
@@ -250,16 +265,25 @@ public class ClassificationTree extends Classifier {
         }
     }
 
-    private interface TreeOperation<T> {
-        T apply(ClassificationNode node);
-    }
+    // private interface TreeOperation<T> {
+    // T apply(ClassificationNode node);
+    // }
 
+    /**
+    */
     private interface TreeLens extends Lens<ClassificationNode, ClassificationNode> {
     }
 
+    /**
+     * source, attribute
+     */
     private interface Lens<S, A> {
+        /**
+        */
         A get(S s);
 
+        /**
+        */
         S set(S s, A a);
     }
 }
