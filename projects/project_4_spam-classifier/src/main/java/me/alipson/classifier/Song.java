@@ -16,6 +16,7 @@ public class Song implements Classifiable {
     // possible features:
     // track_id,track_name,track_artist,track_popularity,track_album_id,track_album_name,track_album_release_date,playlist_name,playlist_id,playlist_genre,playlist_subgenre,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms
     private Map<SongFeature, Double> songFeatures = new HashMap<>();
+    private final Map<SongFeature, Double> PCA_LOADINGS = new HashMap<>();
 
     /**
     */
@@ -58,6 +59,23 @@ public class Song implements Classifiable {
         songFeatures.put(SongFeature.LIVENESS, liveness);
         songFeatures.put(SongFeature.VALENCE, valence);
         songFeatures.put(SongFeature.TEMPO, tempo);
+
+        getPCALoadings();
+    }
+
+    /**
+    */
+    private void getPCALoadings() {
+        PCA_LOADINGS.put(SongFeature.DANCEABILITY, 2.146331);
+        PCA_LOADINGS.put(SongFeature.ENERGY, 1.558253);
+        PCA_LOADINGS.put(SongFeature.KEY, 2.247847);
+        PCA_LOADINGS.put(SongFeature.LOUDNESS, 1.566717);
+        PCA_LOADINGS.put(SongFeature.SPEECHINESS, 1.976885);
+        PCA_LOADINGS.put(SongFeature.INSTRUMENTALNESS, 2.146783);
+        PCA_LOADINGS.put(SongFeature.ACOUSTICNESS, 2.278709);
+        PCA_LOADINGS.put(SongFeature.LIVENESS, 2.472897);
+        PCA_LOADINGS.put(SongFeature.VALENCE, 2.055800);
+        PCA_LOADINGS.put(SongFeature.TEMPO, 2.088194);
     }
 
     /**
@@ -92,6 +110,12 @@ public class Song implements Classifiable {
     }
 
     /**
+    */
+    private double get(SongFeature feature) {
+        return get(feature.name());
+    }
+
+    /**
      * Creates a Classifiable Object from the provided row of song data.
      *
      * @param row
@@ -117,8 +141,30 @@ public class Song implements Classifiable {
 
         Song otherSong = (Song) other;
 
-        return new Split("", 0.);
+        SongFeature bestFeature = null;
+        double highestWeightedDiff = 0;
 
+        // find feature with largest difference.
+        for (SongFeature feature : PCA_LOADINGS.keySet()) {
+            double thisValue = this.get(feature);
+            double otherValue = otherSong.get(feature);
+
+            // weight with PCA loadings
+            double weightedDiff = Math.abs(thisValue - otherValue) * PCA_LOADINGS.get(feature);
+
+            if (weightedDiff > highestWeightedDiff) {
+                bestFeature = feature;
+                highestWeightedDiff = weightedDiff;
+            }
+        }
+
+        if (bestFeature == null) {
+            throw new IllegalArgumentException("No valid feature found for partitioning.");
+        }
+
+        double halfway = Split.midpoint(this.get(bestFeature), otherSong.get(bestFeature));
+
+        return new Split(bestFeature.name(), halfway);
     }
 
 }
