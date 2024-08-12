@@ -6,14 +6,11 @@ import java.io.*;
 
 // Client class for interaction with Classifiers
 public class Client {
-    public static final String TRAIN_FILE = "data/emails/train.csv";
-    public static final String TEST_FILE = "data/emails/test.csv";
-    public static final int LABEL_INDEX = 0;
-    // Very strange thing we're doing here - we're storing a method as a variable!
-    // You should not do this in your homework as it's a forbidden feature, but if
-    // you're
-    // interested in how this works, look up 'functional programming'!
-    public static final Function<List<String>, Classifiable> CONVERTER = Email::toClassifiable;
+    public static final String TRAIN_FILE = "data/songs/train.csv";
+    public static final String TEST_FILE = "data/songs/test.csv";
+    public static final int LABEL_INDEX = 15;
+
+    public static final Function<List<String>, Classifiable> CONVERTER = Song::toClassifiable;
 
     public static void main(String[] args) throws FileNotFoundException {
         Scanner console = new Scanner(System.in);
@@ -29,12 +26,13 @@ public class Client {
             System.out.println();
             System.out.println("1) Test with an input file");
             System.out.println("2) Get testing accuracy");
+            System.out.println("5) Perform batch testing");
             System.out.println("3) Save to a file");
             System.out.println("4) Quit");
             System.out.print("Enter your choice here: ");
 
             choice = console.nextInt();
-            while (choice != 1 && choice != 2 && choice != 3 && choice != 4) {
+            while (choice != 1 && choice != 2 && choice != 3 && choice != 4 && choice != 5) {
                 System.out.print("Please enter a valid option from above: ");
                 choice = console.nextInt();
             }
@@ -44,6 +42,9 @@ public class Client {
                 evalModel(c, console.next());
             } else if (choice == 2) {
                 testModel(c, TEST_FILE);
+            } else if (choice == 5) {
+                System.out.print("Please enter the number of tests to run: ");
+                batchTestModel(console.nextInt());
             } else if (choice == 3) {
                 System.out.print("Please enter the file name you'd like to save to: ");
                 c.save(new PrintStream(console.next() + ".txt"));
@@ -104,5 +105,25 @@ public class Client {
         for (String label : labelToAccuracy.keySet()) {
             System.out.println(label + ": " + labelToAccuracy.get(label));
         }
+    }
+
+    private static void batchTestModel(int tries) throws IllegalArgumentException, FileNotFoundException {
+        if (tries <= 0) {
+            throw new IllegalArgumentException("cannot try less than zero times.");
+        }
+
+        double accuracySum = 0;
+
+        for (int i = 0; i <= tries; i++) {
+            DataLoader trainLoader = new DataLoader(TRAIN_FILE, LABEL_INDEX, CONVERTER);
+            Classifier c = new ClassificationTree(trainLoader.getData(), trainLoader.getLabels());
+            DataLoader testLoader = new DataLoader(TEST_FILE, LABEL_INDEX, CONVERTER);
+            Map<String, Double> labelToAccuracy = c.calculateAccuracy(
+                    testLoader.getData(), testLoader.getLabels());
+            accuracySum += labelToAccuracy.get("Overall");
+        }
+
+        System.out.printf("Average Overall Accuracy for %d runs: %f \n", tries, accuracySum / tries);
+
     }
 }

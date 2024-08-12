@@ -7,7 +7,6 @@ package me.alipson.classifier;
 // TA: Daniel
 
 import java.util.*;
-import java.lang.reflect.*;
 
 /**
  * Songs
@@ -64,7 +63,24 @@ public class Song implements Classifiable {
     }
 
     /**
-    */
+     * Sets PCA loadings derived from the following process:
+     * 
+     * Perform principal component analysis (PCA) on training dataset to reduce
+     * dimensionality and identify main components that capture most variance.
+     * PCA transforms original features into set of orthogonal principal
+     * components (PCs).
+     * 
+     * Obtain PCA loading coefficients for each original feature as eigenvectors of
+     * covariance matrix;
+     * loadings indicate feature's contribution amount to each PC.
+     * Importance of each feature is given by absolute sum of its loadings across
+     * all principal components.
+     * 
+     * PCA loadings provide a measure of each feature’s overall contribution data
+     * variance; higher loadings indicate that feature is more significant in
+     * variance explanation,
+     * therefore is prioritized by weighting in partition task.
+     */
     private void getPCALoadings() {
         PCA_LOADINGS.put(SongFeature.DANCEABILITY, 2.146331);
         PCA_LOADINGS.put(SongFeature.ENERGY, 1.558253);
@@ -96,7 +112,7 @@ public class Song implements Classifiable {
      * @return
      */
     public double get(String feature) {
-        if (!getFeatures().contains(feature)) {
+        if (!getFeatures().contains(feature.toLowerCase())) {
             throw new IllegalArgumentException(
                     String.format("Invalid feature [%s], not within possible features [%s]",
                             feature, getFeatures().toString()));
@@ -145,26 +161,33 @@ public class Song implements Classifiable {
         double highestWeightedDiff = 0;
 
         // find feature with largest difference.
-        for (SongFeature feature : PCA_LOADINGS.keySet()) {
+        for (SongFeature feature : SongFeature.values()) {
             double thisValue = this.get(feature);
             double otherValue = otherSong.get(feature);
+            // System.out.println("for " + feature + "| this: " + thisValue + " | other: " +
+            // otherValue);
 
             // weight with PCA loadings
             double weightedDiff = Math.abs(thisValue - otherValue) * PCA_LOADINGS.get(feature);
+            // System.out.println("weighted diff: " + weightedDiff + " for " + feature);
 
             if (weightedDiff > highestWeightedDiff) {
                 bestFeature = feature;
+                // System.out.println("new best feature " + bestFeature);
                 highestWeightedDiff = weightedDiff;
             }
         }
 
-        if (bestFeature == null) {
-            throw new IllegalArgumentException("No valid feature found for partitioning.");
-        }
+        // BUG: if other has the same data as this but different label
+        if (bestFeature == null)
+            // HACK: choose a feature to create meaningless split on
+            bestFeature = SongFeature.ENERGY;
+        // throw new IllegalArgumentException("no valid feature found for
+        // partitioning.");
 
         double halfway = Split.midpoint(this.get(bestFeature), otherSong.get(bestFeature));
 
-        return new Split(bestFeature.name(), halfway);
+        return new Split(bestFeature.name().toLowerCase(), halfway);
     }
 
 }
